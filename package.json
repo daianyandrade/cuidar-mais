@@ -5,8 +5,8 @@
   "description": "Protótipo acadêmico acessível do Cuidar+.",
   "type": "module",
   "scripts": {
-    "build": "node build.mjs",
-    "start": "node server.mjs",
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/local-server.mjs",
     "test": "node --test"
   }
 }
