@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { addAppointment, addDoseSelfReport, addFamilyContact, addMedication, addSimulationCallRecord, calculateSchedule, confirmReminder, createDemoState, getReminderCount, updateMedication } from '../demo-state.js';
+import { fetchCuiabaPublicHealthUnits, normalizeCnesUnit } from '../api/cuiaba-units.js';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const script = await readFile(new URL('../app.js', import.meta.url), 'utf8');
@@ -170,12 +171,38 @@ test('consultas e exames permanece centrado na agenda e a busca fica disponível
   assert.match(html, /Ver exemplos de atendimento/);
 });
 
-test('a retirada de medicamentos encaminha para a consulta oficial sem inventar estoque', () => {
-  assert.match(html, /Encontrar onde retirar/);
+test('a busca de medicamentos mantém as unidades públicas no Cuidar+ e separa a consulta de estoque oficial', () => {
+  assert.match(html, /Encontrar medicamentos/);
+  assert.match(html, /id="finder-search"/);
   assert.match(html, /estoque-farmacias-cuiaba\.web\.app/);
-  assert.match(html, /telefone oficial verificado/);
-  assert.match(html, /não garante retirada/);
+  assert.match(html, /Consultar estoque oficial/);
+  assert.match(html, /A busca abaixo não consulta o estoque municipal/);
   assert.match(script, /focusMedicineFinder/);
+  assert.match(script, /fetch\('\/api\/cuiaba-units'/);
+  assert.match(script, /navigator\.geolocation/);
+});
+
+test('a integração normaliza somente campos oficiais do CNES e preserva a atualização do cadastro', async () => {
+  const record = {
+    codigo_cnes: '1234567', nome_fantasia: 'UNIDADE TESTE', endereco_estabelecimento: 'Rua Exemplo',
+    numero_estabelecimento: '20', bairro_estabelecimento: 'Centro', codigo_cep_estabelecimento: '78000000',
+    numero_telefone_estabelecimento: '6530000000', latitude_estabelecimento_decimo_grau: '-15.60',
+    longitude_estabelecimento_decimo_grau: '-56.10', data_atualizacao: '2026-03-03'
+  };
+  const normalized = normalizeCnesUnit(record, { code: '2', label: 'Unidade básica de saúde' });
+  assert.equal(normalized.name, 'UNIDADE TESTE');
+  assert.equal(normalized.phone, '6530000000');
+  assert.deepEqual(normalized.coordinates, { latitude: -15.6, longitude: -56.1 });
+  assert.equal(normalized.updatedAt, '2026-03-03');
+  assert.equal('stock' in normalized, false);
+
+  const urls = [];
+  const units = await fetchCuiabaPublicHealthUnits(async (url) => {
+    urls.push(url.toString());
+    return { ok: true, json: async () => ({ estabelecimentos: [record] }) };
+  });
+  assert.equal(units.length, 1);
+  assert.ok(urls.every((url) => url.includes('codigo_municipio=510340')));
 });
 
 test('confirmar um lembrete registra recebimento, sem registrar medicamento ingerido', () => {

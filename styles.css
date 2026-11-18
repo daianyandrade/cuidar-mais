@@ -25,8 +25,8 @@ button:focus-visible, a:focus-visible { outline: 4px solid #f8cc23; outline-offs
 .skip-link:focus { top: .75rem; }
 
 .app-shell { width: min(100%, 480px); min-height: 100vh; margin: 0 auto; padding-bottom: 87px; overflow: hidden; background: var(--surface); box-shadow: 0 0 28px rgba(0,0,0,.12); }
-.app-header { position: relative; overflow: hidden; padding: 19px 22px 30px; color: white; background: radial-gradient(circle at 12% 0%, #075e9c, transparent 39%), linear-gradient(120deg, var(--navy-deep), #004b7c); }
-.app-header::after { position: absolute; right: -49px; bottom: -49px; width: 240px; height: 93px; border-radius: 50% 0 0 0; content: ""; background: linear-gradient(120deg, var(--lime), #06a83a); transform: rotate(-5deg); }
+.app-header { position: relative; overflow: hidden; padding: 19px 22px 30px; color: white; background: radial-gradient(circle at 12% 0%, #19a657, transparent 39%), linear-gradient(120deg, #075d3a, #087b41); }
+.app-header::after { position: absolute; right: -49px; bottom: -49px; width: 240px; height: 93px; border-radius: 50% 0 0 0; content: ""; background: linear-gradient(120deg, #91ed49, #28bd67); transform: rotate(-5deg); }
 .header-row { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
 .brand { display: inline-flex; align-items: center; color: white; text-decoration: none; }
 .brand-mark { width: 48px; height: 45px; color: white; }
@@ -39,7 +39,7 @@ button:focus-visible, a:focus-visible { outline: 4px solid #f8cc23; outline-offs
 .font-button span { font-size: .85rem; }
 .tagline { position: relative; z-index: 1; margin: 7px 0 0 56px; font-size: .96rem; font-weight: 700; }
 
-.welcome { position: relative; display: flex; min-height: 161px; padding: 27px 24px 21px; overflow: hidden; align-items: center; background: linear-gradient(132deg, #fff 0 43%, #edfff0 100%); }
+.welcome { position: relative; display: flex; min-height: 161px; padding: 27px 24px 21px; overflow: hidden; align-items: center; background: linear-gradient(132deg, #fff 0 43%, #ebfff0 100%); }
 .welcome::before { position: absolute; bottom: -50px; left: -16px; width: 220px; height: 104px; border-radius: 50%; content: ""; background: linear-gradient(100deg, #a6f3ae, transparent); opacity: .6; }
 .welcome-copy { position: relative; z-index: 1; }
 .eyebrow { margin: 0 0 3px; color: var(--green-deep); font-weight: 800; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; }
@@ -71,6 +71,10 @@ h1 { margin: 0; font-size: clamp(1.65rem, 7vw, 2.12rem); letter-spacing: -.045em
 .help-card strong { display: block; font-size: 1.22rem; letter-spacing: -.025em; }
 .help-card small { display: block; margin-top: 2px; color: #273f5b; font-size: .91rem; font-weight: 600; }
 .help-arrow { font-size: 3rem; font-weight: 300; }
+.nearby-medicines { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center; margin-top: 20px; padding: 18px; border: 1px solid #c4e7ce; border-radius: 21px; background: linear-gradient(135deg, #effff2, #dff8e6); }
+.nearby-medicines h2 { margin: 0; color: #075d29; font-size: 1.24rem; letter-spacing: -.02em; }
+.nearby-medicines p { margin: 6px 0 0; color: #385a48; font-size: .9rem; font-weight: 600; line-height: 1.32; }
+.nearby-medicines button { min-height: 46px; padding: 9px 11px; border: 2px solid #087d2e; border-radius: 12px; color: white; background: #087d2e; cursor: pointer; font-weight: 800; }
 .install-app { display: grid; width: 100%; min-height: 76px; grid-template-columns: 45px 1fr; gap: 8px; align-items: center; margin-top: 13px; padding: 12px 17px; border: 2px solid #0a9236; border-radius: 20px; color: #075d29; text-align: left; background: #f2fff4; cursor: pointer; }
 .install-app > span:first-child { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 50%; color: white; background: var(--green); font-size: 1.7rem; font-weight: 800; line-height: 1; }
 .install-app strong { display: block; font-size: 1.08rem; }
@@ -151,18 +155,43 @@ html.large-text { font-size: 118%; }
 .programming-details { color: #1a7040 !important; font-weight: 700; }
 .edit-medication { font-size: .84rem; }
 
-/* Consulta oficial de retirada de medicamentos */
-.medicine-finder { padding: 16px; border: 1px solid #b8dfc1; border-radius: 19px; background: #f3fff5; }
-.medicine-finder > p { margin: 0 0 12px; color: #415e4c; font-size: .87rem; line-height: 1.32; }
-.medicine-finder label { display: block; color: #193851; font-size: .86rem; font-weight: 800; }
-.medicine-finder input { display: block; width: 100%; min-height: 44px; margin-top: 5px; padding: 9px 10px; border: 1px solid #a9c5b0; border-radius: 10px; color: #152f4e; background: white; font: inherit; }
-.finder-actions { display: grid; grid-template-columns: 1.35fr 1fr; gap: 9px; margin-top: 12px; }
-.finder-actions a { display: grid; place-items: center; text-align: center; text-decoration: none; }
-.finder-actions button:disabled { border-color: #adb9c2; color: #687783; background: #e9eef1; cursor: not-allowed; }
-.finder-note { margin: 10px 0 0 !important; color: #506878 !important; font-size: .77rem !important; }
-.official-coverage { display: grid; gap: 4px; margin-top: 14px; padding: 11px; border-radius: 12px; color: #244963; background: #dff2ff; font-size: .8rem; line-height: 1.3; }
+/* Unidades públicas e consulta oficial de estoque */
+.medicine-finder { padding: 18px; border: 1px solid #b8dfc1; border-radius: 22px; background: linear-gradient(145deg, #f6fff7, #ecfff0); }
+.medicine-finder > p { margin: 0 0 14px; color: #3f5e4a; font-size: .98rem; line-height: 1.4; }
+.medicine-finder h3 { margin-bottom: 5px; font-size: 1.35rem; }
+.finder-kicker { margin-bottom: 4px !important; color: #087d2e !important; font-size: .8rem !important; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+.medicine-finder label { display: block; color: #193851; font-size: .96rem; font-weight: 800; }
+.optional-label { color: #536d5d; font-size: .85rem; font-weight: 700; }
+.medicine-finder input { display: block; width: 100%; min-height: 52px; margin-top: 7px; padding: 11px 13px; border: 2px solid #a9cdb1; border-radius: 13px; color: #152f4e; background: white; font: inherit; font-size: 1rem; }
+.finder-actions { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10px; margin-top: 14px; }
+.finder-actions button { min-height: 54px; }
+.finder-actions button:disabled { border-color: #adb9c2; color: #687783; background: #e9eef1; cursor: wait; }
+.finder-status { min-height: 24px; margin: 12px 1px 0 !important; color: #315c41 !important; font-size: .9rem !important; font-weight: 700; }
+.finder-results { display: grid; gap: 10px; margin-top: 12px; }
+.finder-result-count { margin: 0; color: #173f2a; font-size: .95rem; font-weight: 800; }
+.finder-medication-note { margin: 0; padding: 11px; border-radius: 12px; color: #665217; background: #fff7d8; font-size: .88rem; font-weight: 700; line-height: 1.35; }
+.finder-results-list { display: grid; gap: 10px; }
+.finder-result-card { padding: 15px; border: 1px solid #c9e4d0; border-radius: 17px; background: white; box-shadow: 0 3px 10px rgba(7, 80, 37, .08); }
+.finder-result-card:focus { outline: 4px solid #f8cc23; outline-offset: 2px; }
+.finder-unit-type { display: inline-block; margin: 0 0 7px; padding: 4px 8px; border-radius: 999px; color: #075d29; background: #dff8e5; font-size: .78rem; font-weight: 800; }
+.finder-result-card h4 { margin: 0; color: #173456; font-size: 1.06rem; line-height: 1.18; }
+.finder-address, .finder-details { margin: 7px 0 0; color: #465d70; font-size: .88rem; line-height: 1.35; }
+.finder-details { color: #39704c; font-weight: 700; }
+.finder-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+.finder-card-actions a, .finder-card-actions button { display: grid; min-height: 43px; padding: 8px 10px; place-items: center; border: 1px solid #14743b; border-radius: 10px; color: #075d29; text-align: center; text-decoration: none; background: #f4fff6; cursor: pointer; font-size: .88rem; font-weight: 800; }
+.finder-map-region { margin-top: 16px; padding-top: 2px; }
+.finder-map-region h4 { margin: 0; color: #173456; font-size: 1.08rem; }
+.finder-map-region p { margin: 5px 0 10px; color: #4b6074; font-size: .86rem; line-height: 1.3; }
+#finder-map { height: 290px; border: 2px solid #b8dfc1; border-radius: 16px; overflow: hidden; background: #e6f2e9; }
+.leaflet-popup-content p { margin: 5px 0 0; color: #445d70; line-height: 1.25; }
+.finder-source { margin: 3px 0 0; color: #5b6879; font-size: .78rem; line-height: 1.35; }
+.official-coverage { display: grid; gap: 6px; margin-top: 16px; padding: 13px; border-radius: 14px; color: #244963; background: #dff2ff; font-size: .9rem; line-height: 1.35; }
 .official-coverage strong { color: #0e527f; }
-@media (max-width: 380px) { .finder-actions { grid-template-columns: 1fr; } }
+.official-coverage a { width: fit-content; min-height: 42px; padding: 10px 12px; border-radius: 10px; color: white; text-decoration: none; background: #0e5c8e; font-weight: 800; }
+.finder-sources { margin-top: 14px; border-top: 1px solid #c9e4d0; }
+.finder-sources summary { padding: 12px 0 4px; color: #075d29; cursor: pointer; font-size: .92rem; font-weight: 800; }
+.finder-sources p { margin: 8px 0 0; color: #466055; font-size: .84rem; line-height: 1.35; }
+@media (max-width: 380px) { .finder-actions { grid-template-columns: 1fr; } .nearby-medicines { grid-template-columns: 1fr; } .nearby-medicines button { width: 100%; } }
 
 /* Consultas e exames demonstrativos */
 .consultation-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 20px 0; padding: 5px; border-radius: 15px; background: #e7f1f7; }

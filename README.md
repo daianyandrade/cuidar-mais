@@ -14,7 +14,7 @@ Abra `http://localhost:4173` no navegador. Para usar outra porta, defina a vari�
 
 ### Abrir no celular durante o desenvolvimento
 
-`localhost` funciona apenas no mesmo aparelho em que o servidor foi iniciado. Com o computador e o celular conectados à mesma rede Wi-Fi, inicie o projeto com `npm.cmd run start` e abra no celular o endereço **Cuidar+ disponível na rede Wi-Fi** mostrado no terminal, por exemplo `http://192.168.0.10:4173`.
+`localhost` funciona apenas no mesmo aparelho em que o servidor foi iniciado. Com o computador e o celular conectados à mesma rede Wi-Fi, inicie o projeto com `npm.cmd run serve` e abra no celular o endereço **Cuidar+ disponível na rede Wi-Fi** mostrado no terminal, por exemplo `http://192.168.0.10:4173`.
 
 Se o endereço não abrir, permita o Node.js na rede privada quando o Windows solicitar a permissão de firewall. Para acesso fora da sua rede Wi-Fi, publique o projeto em uma hospedagem com HTTPS.
 
@@ -40,17 +40,33 @@ O endereço de desenvolvimento da rede Wi-Fi (`http://192.168...`) serve apenas 
 npm.cmd test
 ```
 
+## Encontrar medicamentos em Cuiabá
+
+A busca interna localiza **postos de saúde** e **unidades básicas de saúde** de Cuiabá no Cadastro Nacional de Estabelecimentos de Saúde (CNES), pela API aberta do Ministério da Saúde:
+
+- endpoint: `https://apidadosabertos.saude.gov.br/cnes/estabelecimentos`;
+- município: código IBGE `510340` (Cuiabá); tipos `01` e `02`;
+- campos exibidos somente quando presentes na fonte: nome, endereço, telefone, coordenadas e data de atualização do cadastro;
+- cache no servidor: 6 horas, com possibilidade de servir a versão recente por até 24 horas enquanto atualiza.
+
+O nome do medicamento não é enviado ao backend e a localização, quando autorizada, é usada apenas no navegador para ordenar as unidades por distância aproximada. A data nos cartões é a atualização do cadastro CNES, não uma atualização de estoque.
+
+O portal municipal de estoque é mantido apenas como o botão externo **Consultar estoque oficial**. A página pública foi analisada, mas não foi localizada uma API pública documentada, exportação autorizada ou licença de reutilização para reproduzir seus dados internos no Cuidar+. Por isso o aplicativo não copia nem afirma disponibilidade, quantidade ou validade de medicamentos.
+
+O mapa é criado somente após a busca, com Leaflet e blocos do OpenStreetMap, incluindo a atribuição exigida. Sem internet ou sem o mapa, a lista de unidades continua disponível quando a API puder ser consultada.
+
 ## Incluído nesta etapa
 
-- tela inicial responsiva, seguindo a identidade azul, verde e cartões arredondados da referência;
+- tela inicial responsiva com a identidade verde, cartões arredondados e o nome Cuidar+;
 - destaque para o próximo lembrete de medicamento, identificado como demonstração;
 - atalhos visuais para consultas, medicamentos, família e lembretes;
 - botão de ajuda e aviso de que o recurso não substitui atendimento de emergência;
 - controle de ampliação do texto e leitura do resumo via recurso nativo do navegador, quando disponível;
 - instalação como aplicativo web, com ícone, manifesto e modo de exibição sem a barra do navegador;
 - cache offline dos arquivos básicos da tela inicial;
-- servidor local mínimo, sem integrações externas ou dados reais.
+- busca interna de unidades públicas reais de Cuiabá pelo CNES, com telefone, rota e mapa quando a fonte fornecer esses dados;
+- servidor local com a rota `/api/cuiaba-units` para testar a integração sem expor dados pessoais.
 
 ## Próximas etapas
 
-Cadastro e histórico de medicamentos, tela de lembrete, simulação de ligação, painel do familiar, consultas e locais de atendimento serão implementados separadamente. Nenhuma integração com telefonia, mapas, SUS ou dados de pacientes está incluída neste protótipo.
+Cadastro e histórico de medicamentos, tela de lembrete, simulação de ligação, painel do familiar e consultas seguem em evolução. Não há integração com dados de pacientes, nem confirmação de estoque de medicamento fora de uma fonte oficial autorizada.

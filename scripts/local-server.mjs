@@ -2,6 +2,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { networkInterfaces } from 'node:os';
 import { extname, join, normalize, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const root = resolve('.');
 const port = Number(process.env.PORT || 4173);
@@ -12,8 +13,13 @@ const mimeTypes = {
   '.webmanifest': 'application/manifest+json; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml'
 };
 
-createServer((request, response) => {
+createServer(async (request, response) => {
   const requestPath = new URL(request.url, `http://${request.headers.host}`).pathname;
+  if (requestPath === '/api/cuiaba-units') {
+    const { default: handler } = await import(pathToFileURL(resolve(root, 'api', 'cuiaba-units.js')).href);
+    await handler(request, response);
+    return;
+  }
   const relativePath = requestPath === '/' ? 'index.html' : decodeURIComponent(requestPath).replace(/^[/\\]+/, '');
   const filePath = normalize(join(root, relativePath));
   if (!filePath.startsWith(root) || !existsSync(filePath) || !statSync(filePath).isFile()) {

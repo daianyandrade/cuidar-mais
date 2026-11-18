@@ -27,6 +27,12 @@ const familyContactMessage = document.querySelector('#family-contact-message');
 const callSimulation = document.querySelector('#call-simulation');
 const callSimulationMessage = document.querySelector('#call-simulation-message');
 const callSimulationRecipient = document.querySelector('#call-simulation-recipient');
+const finderMedicationInput = document.querySelector('#finder-medication-input');
+const finderSearchButton = document.querySelector('#finder-search');
+const finderLocationButton = document.querySelector('#finder-use-location');
+const finderStatus = document.querySelector('#finder-status');
+const finderResults = document.querySelector('#finder-results');
+const finderMapRegion = document.querySelector('#finder-map-region');
 let activeCallKind = null;
 let repeatCallMessage = false;
 let toastTimer;
@@ -34,6 +40,11 @@ let deferredInstallPrompt;
 let state = loadState();
 let calculatedTimes = [];
 let editingMedicationId = null;
+let finderUnits = [];
+let finderLocation = null;
+let finderMap = null;
+let finderMarkers = new Map();
+let finderPayload = null;
 const demonstrationServices = [
   { specialty: 'geriatria', type: 'SUS', name: 'Atendimento em geriatria — exemplo', description: 'Exemplo de local que pode oferecer cuidado à pessoa idosa. Confirme a necessidade de encaminhamento e a disponibilidade.' },
   { specialty: 'exames', type: 'Particular', name: 'Laboratório — exemplo', description: 'Exemplo de local para realização de exames. Confirme preparo, valores e disponibilidade diretamente com a unidade.' },
@@ -233,11 +244,226 @@ function renderMedicationList() {
 }
 
 function focusMedicineFinder(medicationName) {
-  const finder = document.querySelector('#finder-medication-input');
-  finder.value = medicationName;
+  finderMedicationInput.value = medicationName;
   document.querySelector('#medicine-finder').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  finder.focus({ preventScroll: true });
-  showToast('Medicamento preenchido. Consulte a fonte oficial para verificar a unidade e a disponibilidade atual.');
+  finderMedicationInput.focus({ preventScroll: true });
+  showToast('Medicamento preenchido. Busque as unidades e confirme o estoque no portal oficial.');
+}
+
+function formatFinderDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'data não informada' : new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(date);
+}
+
+function getFinderDistance(unit) {
+  if (!finderLocation || !unit.coordinates) return null;
+  const toRadians = (value) => value * Math.PI / 180;
+  const earthRadiusKm = 6371;
+  const latitudeDifference = toRadians(unit.coordinates.latitude - finderLocation.latitude);
+  const longitudeDifference = toRadians(unit.coordinates.longitude - finderLocation.longitude);
+  const latitudeStart = toRadians(finderLocation.latitude);
+  const latitudeEnd = toRadians(unit.coordinates.latitude);
+  const arc = Math.sin(latitudeDifference / 2) ** 2
+    + Math.cos(latitudeStart) * Math.cos(latitudeEnd) * Math.sin(longitudeDifference / 2) ** 2;
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(arc), Math.sqrt(1 - arc));
+}
+
+function finderUnitsForDisplay() {
+  return [...finderUnits].sort((left, right) => {
+    const leftDistance = getFinderDistance(left);
+    const rightDistance = getFinderDistance(right);
+    if (leftDistance !== null && rightDistance !== null) return leftDistance - rightDistance;
+    if (leftDistance !== null) return -1;
+    if (rightDistance !== null) return 1;
+    return left.name.localeCompare(right.name, 'pt-BR');
+  });
+}
+
+function finderDirectionsUrl(unit) {
+  if (!unit.coordinates) return '';
+  const destination = `${unit.coordinates.latitude},${unit.coordinates.longitude}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+}
+
+function focusFinderUnit(unit) {
+  const marker = finderMarkers.get(unit.id);
+  if (!finderMap || !marker || !unit.coordinates) return;
+  finderMap.setView([unit.coordinates.latitude, unit.coordinates.longitude], Math.max(finderMap.getZoom(), 15), { animate: true });
+  marker.openPopup();
+  finderMapRegion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function renderFinderMap(units) {
+  const mappableUnits = units.filter((unit) => unit.coordinates);
+  finderMarkers = new Map();
+  if (!mappableUnits.length || !window.L) {
+    finderMapRegion.hidden = true;
+    return;
+  }
+
+  finderMapRegion.hidden = false;
+  if (!finderMap) {
+    finderMap = window.L.map('finder-map', { scrollWheelZoom: false });
+    window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(finderMap);
+  } else {
+    finderMap.eachLayer((layer) => {
+      if (layer instanceof window.L.Marker || layer instanceof window.L.CircleMarker) finderMap.removeLayer(layer);
+    });
+  }
+
+  const bounds = [];
+  mappableUnits.forEach((unit) => {
+    const coordinates = [unit.coordinates.latitude, unit.coordinates.longitude];
+    const marker = window.L.circleMarker(coordinates, {
+      radius: 9,
+      color: unit.typeCode === '2' ? '#087d2e' : '#0d5f97',
+      fillColor: unit.typeCode === '2' ? '#19a24a' : '#1987c9',
+      fillOpacity: 1,
+      weight: 2
+    }).addTo(finderMap);
+    const popup = document.createElement('div');
+    const title = document.createElement('strong');
+    title.textContent = unit.name;
+    const address = document.createElement('p');
+    address.textContent = unit.address;
+    popup.append(title, address);
+    marker.bindPopup(popup);
+    marker.on('click', () => document.querySelector(`[data-finder-card="${unit.id}"]`)?.focus({ preventScroll: true }));
+    finderMarkers.set(unit.id, marker);
+    bounds.push(coordinates);
+  });
+
+  if (finderLocation) {
+    window.L.circleMarker([finderLocation.latitude, finderLocation.longitude], {
+      radius: 8, color: '#5b2b8f', fillColor: '#7b3fb2', fillOpacity: 1, weight: 2
+    }).addTo(finderMap).bindPopup('Sua localização aproximada');
+    bounds.push([finderLocation.latitude, finderLocation.longitude]);
+  }
+  finderMap.fitBounds(bounds, { padding: [28, 28], maxZoom: 14 });
+  window.setTimeout(() => finderMap.invalidateSize(), 0);
+}
+
+function renderFinderResults(payload) {
+  const units = finderUnitsForDisplay();
+  const medication = finderMedicationInput.value.trim();
+  finderResults.replaceChildren();
+  const count = document.createElement('p');
+  count.className = 'finder-result-count';
+  count.textContent = `${units.length} ${units.length === 1 ? 'unidade encontrada' : 'unidades encontradas'} no cadastro oficial.`;
+  finderResults.append(count);
+
+  if (medication) {
+    const medicationNote = document.createElement('p');
+    medicationNote.className = 'finder-medication-note';
+    medicationNote.textContent = `O CNES não informa estoque de “${medication}”. Para confirmar a disponibilidade, use “Consultar estoque oficial”.`;
+    finderResults.append(medicationNote);
+  }
+
+  const list = document.createElement('div');
+  list.className = 'finder-results-list';
+  units.forEach((unit) => {
+    const card = document.createElement('article');
+    card.className = 'finder-result-card';
+    card.tabIndex = -1;
+    card.dataset.finderCard = unit.id;
+    const type = document.createElement('p');
+    type.className = 'finder-unit-type';
+    type.textContent = unit.type;
+    const name = document.createElement('h4');
+    name.textContent = unit.name;
+    const address = document.createElement('p');
+    address.className = 'finder-address';
+    address.textContent = unit.address || 'Endereço não informado no cadastro oficial.';
+    const details = document.createElement('p');
+    details.className = 'finder-details';
+    const distance = getFinderDistance(unit);
+    const distanceText = distance === null ? '' : ` · ${distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1).replace('.', ',')} km`} de você`;
+    details.textContent = `Cadastro atualizado em ${formatFinderDate(unit.updatedAt)}${distanceText}`;
+    const actions = document.createElement('div');
+    actions.className = 'finder-card-actions';
+    if (unit.phone) {
+      const call = document.createElement('a');
+      call.href = `tel:${unit.phone.replace(/[^\d+]/g, '')}`;
+      call.textContent = 'Ligar';
+      actions.append(call);
+    }
+    if (unit.coordinates) {
+      const onMap = document.createElement('button');
+      onMap.type = 'button';
+      onMap.textContent = 'Ver no mapa';
+      onMap.addEventListener('click', () => focusFinderUnit(unit));
+      actions.append(onMap);
+      const directions = document.createElement('a');
+      directions.href = finderDirectionsUrl(unit);
+      directions.target = '_blank';
+      directions.rel = 'noopener noreferrer';
+      directions.textContent = 'Como chegar';
+      actions.append(directions);
+    }
+    card.append(type, name, address, details);
+    if (actions.childElementCount) card.append(actions);
+    list.append(card);
+  });
+  finderResults.append(list);
+  const source = document.createElement('p');
+  source.className = 'finder-source';
+  source.textContent = `Fonte: ${payload.sources?.[0]?.name || 'CNES'} · consulta atualizada em ${formatDateTime(payload.fetchedAt)}.`;
+  finderResults.append(source);
+  renderFinderMap(units);
+}
+
+async function loadFinderUnits() {
+  finderSearchButton.disabled = true;
+  finderLocationButton.disabled = true;
+  finderStatus.textContent = 'Buscando unidades públicas cadastradas em Cuiabá…';
+  try {
+    const response = await fetch('/api/cuiaba-units', { headers: { accept: 'application/json' } });
+    const payload = await response.json();
+    if (!response.ok || !Array.isArray(payload.units)) throw new Error(payload.error || 'Falha ao buscar unidades.');
+    finderUnits = payload.units;
+    finderPayload = payload;
+    renderFinderResults(finderPayload);
+    finderStatus.textContent = finderLocation
+      ? 'Unidades ordenadas pela distância aproximada da sua localização.'
+      : 'Lista carregada. Você pode usar sua localização para ordenar por proximidade.';
+  } catch (error) {
+    finderResults.replaceChildren();
+    finderMapRegion.hidden = true;
+    finderStatus.textContent = error instanceof Error ? `${error.message} Tente novamente em alguns minutos.` : 'Não foi possível carregar a lista agora. Tente novamente em alguns minutos.';
+  } finally {
+    finderSearchButton.disabled = false;
+    finderLocationButton.disabled = false;
+  }
+}
+
+function requestFinderLocation() {
+  if (!navigator.geolocation) {
+    finderStatus.textContent = 'Este aparelho não oferece localização. Você ainda pode buscar as unidades pelo nome.';
+    return;
+  }
+  finderLocationButton.disabled = true;
+  finderStatus.textContent = 'Aguardando sua permissão de localização…';
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      finderLocation = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+      finderLocationButton.disabled = false;
+      if (finderUnits.length) {
+        renderFinderResults(finderPayload);
+        finderStatus.textContent = 'Unidades ordenadas pela distância aproximada da sua localização.';
+      } else {
+        finderStatus.textContent = 'Localização usada somente neste aparelho. Agora buscaremos as unidades próximas.';
+        loadFinderUnits();
+      }
+    },
+    () => {
+      finderLocationButton.disabled = false;
+      finderStatus.textContent = 'Não foi possível usar sua localização. Você ainda pode buscar as unidades por nome.';
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+  );
 }
 
 function renderHistory() {
@@ -470,6 +696,12 @@ fontToggle.addEventListener('click', () => {
 document.querySelector('[data-read-page]').addEventListener('click', () => medicationsView.hidden ? speakReminder() : showToast('Use “Ouvir novamente” na tela inicial para reproduzir o lembrete.'));
 document.querySelectorAll('[data-view]').forEach((element) => element.addEventListener('click', () => showView(element.dataset.view)));
 document.querySelectorAll('[data-demo-action]').forEach((element) => element.addEventListener('click', () => showFutureMessage(element.dataset.demoAction)));
+document.querySelectorAll('[data-open-medicine-finder]').forEach((button) => button.addEventListener('click', () => {
+  showView('medications');
+  window.setTimeout(() => focusMedicineFinder(finderMedicationInput.value), 0);
+}));
+finderSearchButton.addEventListener('click', loadFinderUnits);
+finderLocationButton.addEventListener('click', requestFinderLocation);
 document.querySelector('#repeat-reminder').addEventListener('click', speakReminder);
 document.querySelector('#simulate-reminder-call').addEventListener('click', () => openCallSimulation('medication'));
 document.querySelector('#answer-simulated-call').addEventListener('click', () => {
