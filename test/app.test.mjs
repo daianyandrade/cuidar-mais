@@ -60,6 +60,8 @@ test('o manifesto declara ícones PNG válidos para instalação Android', async
 
 test('a publicação Vercel evita que o service worker fique desatualizado', async () => {
   const vercelConfig = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
+  assert.equal(vercelConfig.framework, null);
+  assert.equal(vercelConfig.outputDirectory, 'dist');
   const serviceWorkerHeaders = vercelConfig.headers.find((entry) => entry.source === '/sw.js');
   assert.ok(serviceWorkerHeaders);
   assert.match(serviceWorkerHeaders.headers[0].value, /no-cache/);
