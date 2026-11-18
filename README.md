@@ -7,7 +7,7 @@ Protótipo acadêmico instalável de uma interface de apoio à organização de 
 O projeto não requer instalação de pacotes. Com o Node.js instalado, execute no PowerShell:
 
 ```powershell
-npm.cmd run start
+npm.cmd run serve
 ```
 
 Abra `http://localhost:4173` no navegador. Para usar outra porta, defina a variável `PORT` antes de iniciar o servidor.
