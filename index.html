@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#003a6a" />
+    <meta name="description" content="Cuidar+: organização de lembretes e informações de saúde para pessoas idosas." />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="icons/cuidar-plus.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>Cuidar+ | Início</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo principal</a>
+
+    <main class="app-shell">
+      <header class="app-header" aria-label="Cabeçalho do Cuidar+">
+        <div class="header-row">
+          <a class="brand" href="#inicio" aria-label="Cuidar+, página inicial">
+            <svg class="brand-mark" viewBox="0 0 62 58" aria-hidden="true">
+              <path d="M31 52C17 42 4 31 4 18A14 14 0 0 1 29 9l2 3 2-3a14 14 0 0 1 25 9c0 13-13 24-27 34Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+              <path d="M21 25c2 8 8 13 10 15 3-3 8-8 10-15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="21" cy="18" r="4" fill="currentColor"/>
+              <circle cx="41" cy="18" r="4" fill="currentColor"/>
+            </svg>
+            <span class="brand-word">Cuidar<span>+</span></span>
+          </a>
+          <div class="header-controls">
+            <button class="icon-button font-button" type="button" data-font-toggle aria-pressed="false" aria-label="Aumentar tamanho do texto">A<span>+</span></button>
+            <button class="icon-button" type="button" data-read-page aria-label="Ouvir resumo da página">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4Zm12.6-2.6a1 1 0 0 1 1.4 0 6.5 6.5 0 0 1 0 9.2 1 1 0 1 1-1.4-1.4 4.5 4.5 0 0 0 0-6.4 1 1 0 0 1 0-1.4Zm2.8-2.8a1 1 0 0 1 1.4 0 10.5 10.5 0 0 1 0 14.8 1 1 0 0 1-1.4-1.4 8.5 8.5 0 0 0 0-12 1 1 0 0 1 0-1.4Z" fill="currentColor"/></svg>
+            </button>
+          </div>
+        </div>
+        <p class="tagline">Saúde e cuidado para a pessoa idosa</p>
+      </header>
+
+      <section id="inicio" class="welcome" aria-labelledby="welcome-title">
+        <div class="welcome-copy">
+          <p class="eyebrow">Início</p>
+          <h1 id="welcome-title">Olá, Dona Maria!</h1>
+          <p>Vamos cuidar da sua saúde hoje?</p>
+          <span class="welcome-line" aria-hidden="true"></span>
+        </div>
+        <div class="welcome-symbol" aria-hidden="true">
+          <svg viewBox="0 0 72 66"><path d="M36 61C22 50 7 38 7 22A16 16 0 0 1 35 12l1 2 1-2a16 16 0 0 1 28 10c0 16-15 28-29 39Z" fill="none" stroke="currentColor" stroke-width="5"/><path d="M37 23v23M26 35h22" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>
+        </div>
+      </section>
+
+      <section id="conteudo" class="content" tabindex="-1" aria-label="Opções principais">
+        <section id="home-view">
+        <article class="medicine-card" aria-labelledby="medicine-title">
+          <span class="focus-label"><span aria-hidden="true">●</span> Foco principal</span>
+          <div class="medicine-icon" aria-hidden="true">
+            <img class="medicine-icon-image" src="/icons/capsule-realistic.png" alt="" />
+          </div>
+          <div class="medicine-copy">
+            <p class="card-kicker">Próximo lembrete · demonstração</p>
+            <h2 id="medicine-title">Meus<br />Medicamentos</h2>
+            <p id="home-reminder-details">Losartana 50 mg às <strong>08:00</strong></p>
+          </div>
+          <button class="card-arrow" type="button" data-view="medications" aria-label="Abrir meus medicamentos">›</button>
+        </article>
+
+        <p id="home-reminder-status" class="reminder-status pending" aria-live="polite">Lembrete pendente de confirmação</p>
+        <div class="reminder-actions" aria-label="Ações do lembrete">
+          <button id="confirm-reminder" class="primary-action" type="button">Confirmar recebimento</button>
+          <button id="repeat-reminder" class="secondary-action" type="button">🔊 Ouvir novamente</button>
+        </div>
+        <button id="simulate-reminder-call" class="call-demo-button" type="button">☎ Simular ligação de lembrete</button>
+
+        <p id="daily-summary" class="daily-summary" aria-live="polite"><strong>Hoje:</strong> 1 lembrete programado.</p>
+
+        <div class="shortcut-grid">
+          <button class="shortcut-card blue" type="button" data-view="consultations">
+            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><rect x="9" y="13" width="46" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="5"/><path d="M9 27h46M21 7v13M43 7v13M20 37h7M37 37h7M20 47h7M37 47h7" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>
+            <span><strong>Consultas e<br />Exames</strong><small>Veja seus compromissos</small></span>
+          </button>
+          <button class="shortcut-card green" type="button" data-demo-action="Abrir locais para medicamentos">
+            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg finder-medication-icon"><path d="M47 8c-7 0-12 5-12 12 0 9 12 20 12 20s12-11 12-20c0-7-5-12-12-12Z" fill="currentColor" opacity=".28"/><circle cx="47" cy="20" r="4" fill="white"/><path d="M21 14h22v9h5v30H16V23h5v-9Z" fill="currentColor"/><path d="M25 14h14" stroke="white" stroke-width="4" stroke-linecap="round"/><path d="M32 28v17M23.5 36.5h17" stroke="white" stroke-width="5" stroke-linecap="round"/></svg></span>
+            <span><strong>Encontrar<br />Medicamentos</strong><small>Informações da rede pública</small></span>
+          </button>
+          <button class="shortcut-card green" type="button" data-view="family">
+            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><circle cx="32" cy="19" r="8" fill="currentColor"/><circle cx="15" cy="25" r="7" fill="currentColor" opacity=".8"/><circle cx="49" cy="25" r="7" fill="currentColor" opacity=".8"/><path d="M18 55v-8c0-8 6-14 14-14s14 6 14 14v8M3 55v-6c0-7 5-12 12-12 2 0 4 .5 6 1.5M61 55v-6c0-7-5-12-12-12-2 0-4 .5-6 1.5" fill="currentColor"/></svg></span>
+            <span><strong>Minha<br />Família</strong><small>Acompanhe com seus familiares</small></span>
+          </button>
+          <button class="shortcut-card green" type="button" data-demo-action="Configurar lembretes">
+            <span class="shortcut-icon" aria-hidden="true">☎</span>
+            <span><strong>Receber<br />Lembretes</strong><small>Por aplicativo, voz ou ligação</small></span>
+          </button>
+        </div>
+
+        <button class="help-card" type="button" data-demo-action="Pedir ajuda a um contato cadastrado">
+          <span class="help-icon" aria-hidden="true">i</span>
+          <span><strong>Precisa de ajuda?</strong><small>Toque aqui e fale com um familiar.</small></span>
+          <span class="help-arrow" aria-hidden="true">›</span>
+        </button>
+
+        <button id="install-app" class="install-app" type="button" hidden>
+          <span aria-hidden="true">⇩</span>
+          <span><strong>Instalar aplicativo</strong><small>Use o Cuidar+ como um app neste dispositivo.</small></span>
+        </button>
+
+        <p class="demo-note">Protótipo acadêmico com dados de demonstração. O Cuidar+ organiza lembretes e não substitui orientação profissional ou atendimento de emergência.</p>
+        </section>
+
+        <section id="medications-view" class="app-view" aria-labelledby="medications-view-title" hidden>
+          <div class="view-heading">
+            <button class="back-button" type="button" data-view="home">‹ Voltar</button>
+            <p class="eyebrow">Modo demonstração · dados fictícios</p>
+            <h2 id="medications-view-title">Meus medicamentos</h2>
+            <p>Confira os lembretes cadastrados. A confirmação registra somente o recebimento do aviso.</p>
+          </div>
+
+          <section class="medication-section" aria-labelledby="active-medicines-title">
+            <div class="section-title-row">
+              <h3 id="active-medicines-title">Medicamentos ativos</h3>
+              <span id="medication-count" class="count-chip">1 cadastrado</span>
+            </div>
+            <div id="medication-list" class="medication-list" aria-live="polite"></div>
+          </section>
+
+          <section id="medicine-finder" class="medication-section medicine-finder" aria-labelledby="medicine-finder-title">
+            <h3 id="medicine-finder-title">Encontrar onde retirar</h3>
+            <p>Consulte a disponibilidade na rede pública de Cuiabá antes de sair de casa.</p>
+            <label>Medicamento que você procura
+              <input id="finder-medication-input" type="search" autocomplete="off" placeholder="Ex.: nome conforme a receita" />
+            </label>
+            <div class="finder-actions">
+              <a id="official-medication-search" class="primary-action" href="https://estoque-farmacias-cuiaba.web.app/" target="_blank" rel="noopener noreferrer">Abrir consulta oficial</a>
+              <button id="finder-call-button" class="secondary-action" type="button" disabled>Ligar antes</button>
+            </div>
+            <p id="finder-call-note" class="finder-note">O botão de ligação será liberado quando houver telefone oficial verificado da unidade encontrada.</p>
+            <div class="official-coverage"><strong>Locais cobertos pela consulta oficial:</strong><span>USFs com farmácia, Centro de Especialidades Médicas (CEM) e Serviço de Assistência Especializada (SAE).</span></div>
+            <p class="demo-note">A unidade fornecer o medicamento não garante retirada: confirme a disponibilidade e os requisitos no momento da consulta.</p>
+          </section>
+
+          <details class="medicine-form-panel" open>
+            <summary>Adicionar medicamento demonstrativo</summary>
+            <p class="form-intro">Copie o nome e a dosagem exatamente como constam na receita. O Cuidar+ não calcula ou recomenda doses.</p>
+            <form id="medication-form" novalidate>
+              <label>Nome do medicamento
+                <input name="name" type="text" autocomplete="off" required maxlength="80" placeholder="Ex.: nome que consta na receita" />
+              </label>
+              <label>Dosagem conforme a receita
+                <input name="dosage" type="text" autocomplete="off" required maxlength="60" placeholder="Ex.: 50 mg" />
+              </label>
+              <fieldset class="schedule-programming">
+                <legend>Programar horários</legend>
+                <p class="form-intro">O Cuidar+ apenas organiza os horários informados conforme a receita. Confira antes de salvar.</p>
+                <label>Quantas vezes ao dia?
+                  <select id="medication-frequency" name="frequency">
+                    <option value="">Não informado</option>
+                    <option value="1">1 vez ao dia</option>
+                    <option value="2">2 vezes ao dia</option>
+                    <option value="3">3 vezes ao dia</option>
+                    <option value="4">4 vezes ao dia</option>
+                    <option value="custom">Personalizado</option>
+                  </select>
+                </label>
+                <label id="custom-frequency-field" hidden>Frequência personalizada
+                  <input id="custom-frequency" type="number" min="1" max="24" inputmode="numeric" placeholder="Quantidade conforme a receita" />
+                </label>
+                <label>Intervalo entre as doses
+                  <select id="medication-interval" name="intervalHours">
+                    <option value="">Não informado / vou informar manualmente</option>
+                    <option value="4">A cada 4 horas</option>
+                    <option value="6">A cada 6 horas</option>
+                    <option value="8">A cada 8 horas</option>
+                    <option value="12">A cada 12 horas</option>
+                    <option value="24">A cada 24 horas</option>
+                    <option value="custom">Personalizado</option>
+                  </select>
+                </label>
+                <label id="custom-interval-field" hidden>Intervalo personalizado em horas
+                  <input id="custom-interval" type="number" min="1" max="24" inputmode="numeric" placeholder="Ex.: 10" />
+                </label>
+                <fieldset class="first-dose-choice">
+                  <legend>Quando começar os lembretes?</legend>
+                  <label><input name="firstDoseStatus" type="radio" value="now" checked /> Tomei a primeira dose agora</label>
+                  <label><input name="firstDoseStatus" type="radio" value="not-taken" /> Ainda não tomei a primeira dose</label>
+                </fieldset>
+                <input id="first-time" name="firstTime" type="time" tabindex="-1" aria-hidden="true" hidden />
+                <div id="calculated-schedule" class="calculated-schedule" aria-live="polite" hidden></div>
+              </fieldset>
+              <fieldset class="advanced-schedule" hidden>
+                <legend>Horários de lembrete</legend>
+                <div id="schedule-fields" class="schedule-fields">
+                  <label>Horário 1<input name="times" type="time" required /></label>
+                </div>
+                <button id="add-schedule" class="text-button" type="button">+ Adicionar outro horário</button>
+              </fieldset>
+              <input name="startDate" type="hidden" />
+              <label>Término da receita (opcional)<input name="endDate" type="date" /></label>
+              <label class="advanced-schedule" hidden>Observações da receita ou do cuidador
+                <textarea name="notes" rows="3" maxlength="240" placeholder="Somente informações fornecidas pela pessoa ou cuidador."></textarea>
+              </label>
+              <p id="form-message" class="form-message" role="alert" hidden></p>
+              <button class="primary-action full-width" type="submit">Salvar medicamento demonstrativo</button>
+              <button id="cancel-edit" class="reset-button" type="button" hidden>Cancelar edição</button>
+            </form>
+          </details>
+
+          <section class="medication-section" aria-labelledby="history-title">
+            <h3 id="history-title">Histórico de lembretes</h3>
+            <div id="reminder-history" class="history-list" aria-live="polite"></div>
+          </section>
+
+          <button id="reset-demo" class="reset-button" type="button">Restaurar dados demonstrativos</button>
+          <p class="demo-note">As informações desta versão ficam apenas neste dispositivo e servem exclusivamente para a demonstração.</p>
+        </section>
+
+        <section id="consultations-view" class="app-view" aria-labelledby="consultations-view-title" hidden>
+          <div class="view-heading">
+            <button class="back-button" type="button" data-view="home">‹ Voltar</button>
+            <p class="eyebrow">Modo demonstração · dados fictícios</p>
+            <h2 id="consultations-view-title">Consultas e Exames</h2>
+            <p>Cuide da sua saúde com mais facilidade.</p>
+          </div>
+
+          <div class="consultation-tabs" role="tablist" aria-label="Opções de consultas e exames" hidden>
+            <button id="agenda-tab" class="active" type="button" role="tab" aria-selected="true" aria-controls="agenda-panel">Minha agenda</button>
+            <button id="search-tab" type="button" role="tab" aria-selected="false" aria-controls="search-panel">Buscar atendimento</button>
+          </div>
+
+          <section id="agenda-panel" role="tabpanel" aria-labelledby="agenda-tab">
+            <div class="section-title-row consultation-title-row">
+              <h3>Próximos agendamentos</h3>
+              <span class="count-chip">Exemplos</span>
+            </div>
+            <div id="appointment-list" class="appointment-list" aria-live="polite"></div>
+            <details id="appointment-form-panel" class="medicine-form-panel">
+              <summary>+ Nova consulta ou exame</summary>
+              <p class="form-intro">Este registro organiza um compromisso informado por você. Ele não agenda atendimento no SUS ou em qualquer unidade.</p>
+              <form id="appointment-form" novalidate>
+                <label>Tipo de compromisso
+                  <select name="type" required><option value="Consulta">Consulta</option><option value="Exame">Exame</option></select>
+                </label>
+                <label>Especialidade ou tipo de exame
+                  <input name="title" type="text" required maxlength="80" placeholder="Ex.: Geriatria ou exame de sangue" />
+                </label>
+                <div class="two-fields">
+                  <label>Data<input name="date" type="date" required /></label>
+                  <label>Horário<input name="time" type="time" required /></label>
+                </div>
+                <label>Local informado
+                  <input name="location" type="text" required maxlength="100" placeholder="Ex.: Unidade ou laboratório" />
+                </label>
+                <label>Observações
+                  <textarea name="notes" rows="2" maxlength="240" placeholder="Informações do agendamento, se houver."></textarea>
+                </label>
+                <p id="appointment-form-message" class="form-message" role="alert" hidden></p>
+                <button class="primary-action full-width" type="submit">Salvar compromisso demonstrativo</button>
+              </form>
+            </details>
+          </section>
+
+          <section id="search-panel" role="tabpanel" aria-labelledby="search-tab" hidden>
+            <article class="geriatrics-highlight">
+              <span aria-hidden="true">♥+</span>
+              <div><strong>Saúde da pessoa idosa</strong><p>Encontre atendimento especializado em geriatria e outras áreas.</p></div>
+            </article>
+            <p class="service-disclaimer">Esta busca mostra somente exemplos. Encontrar um local não significa ter consulta disponível, e atendimentos pelo SUS podem depender de encaminhamento e regulação.</p>
+            <div class="service-filters" aria-label="Filtros demonstrativos">
+              <label>Especialidade<select id="service-specialty-filter"><option value="all">Todas</option><option value="geriatria">Geriatria</option><option value="exames">Exames</option><option value="clinica">Clínica geral</option></select></label>
+              <label>Atendimento<select id="service-type-filter"><option value="all">Todos</option><option value="SUS">SUS</option><option value="Particular">Particular</option></select></label>
+            </div>
+            <div id="service-list" class="service-list" aria-live="polite"></div>
+          </section>
+          <p class="demo-note">Prévia interativa da organização do módulo, com agendamentos e locais fictícios.</p>
+        </section>
+
+        <section id="family-view" class="app-view" aria-labelledby="family-view-title" hidden>
+          <div class="view-heading">
+            <button class="back-button" type="button" data-view="home">‹ Voltar</button>
+            <p class="eyebrow">Modo demonstração · dados fictícios</p>
+            <h2 id="family-view-title">Minha Família</h2>
+            <p>Acompanhamento e apoio ao idoso, mediante autorização.</p>
+          </div>
+
+          <article class="family-profile-card">
+            <span class="family-avatar" aria-hidden="true">M</span>
+            <div><strong>Dona Maria</strong><p>Perfil demonstrativo da pessoa idosa vinculada.</p></div>
+            <span class="authorized-chip">Vínculo autorizado<br />· demonstração</span>
+          </article>
+
+          <section class="family-section" aria-labelledby="family-status-title">
+            <h3 id="family-status-title">Acompanhamento de hoje</h3>
+            <div id="family-reminder-status" class="family-status" aria-live="polite"></div>
+          </section>
+
+          <section class="family-section" aria-labelledby="linked-family-title">
+            <div class="section-title-row"><h3 id="linked-family-title">Familiares vinculados</h3><span class="count-chip">Com autorização</span></div>
+            <div id="family-contact-list" class="family-contact-list" aria-live="polite"></div>
+            <details class="medicine-form-panel">
+              <summary>+ Vincular familiar ou cuidador</summary>
+              <p class="form-intro">Use somente dados fictícios nesta demonstração. Em uma versão real, o vínculo dependerá do consentimento da pessoa idosa.</p>
+              <form id="family-contact-form" novalidate>
+                <label>Nome do familiar ou cuidador<input name="name" type="text" required maxlength="70" placeholder="Ex.: Ana" /></label>
+                <label>Relação com a pessoa idosa<input name="relationship" type="text" required maxlength="50" placeholder="Ex.: Filha ou cuidador" /></label>
+                <label>Telefone de referência (demonstração)<input name="phone" type="tel" required maxlength="30" placeholder="Ex.: (00) 00000-0000" /></label>
+                <label class="consent-check"><input name="authorized" type="checkbox" required /> <span>Confirmo que há autorização demonstrativa para este vínculo.</span></label>
+                <p id="family-contact-message" class="form-message" role="alert" hidden></p>
+                <button class="primary-action full-width" type="submit">Salvar vínculo demonstrativo</button>
+              </form>
+            </details>
+          </section>
+
+          <section class="family-section" aria-labelledby="phone-reminder-title">
+            <h3 id="phone-reminder-title">Telefones e lembretes</h3>
+            <article class="phone-simulation-card"><span aria-hidden="true">☎</span><div><strong>Lembrete por ligação</strong><p>Preparado apenas como simulação para a Mostra. Nenhuma chamada real será feita.</p></div></article>
+            <button id="simulate-family-call" class="secondary-action full-width" type="button">Testar ligação simulada</button>
+            <button id="simulate-ubs-call" class="secondary-action full-width" type="button">Simular ligação para UBS</button>
+            <button id="simulate-acs-call" class="secondary-action full-width" type="button">Simular ligação para ACS</button>
+          </section>
+
+          <section class="family-section" aria-labelledby="nearby-care-title">
+            <h3 id="nearby-care-title">Encontrar atendimento próximo</h3>
+            <p class="service-disclaimer">A busca por UBS, clínicas, laboratórios e especialidades ficará nesta área. Nesta demonstração, os resultados continuam sendo exemplos, sem vagas ou profissionais reais.</p>
+            <button id="open-family-search" class="secondary-action full-width" type="button">Ver exemplos de atendimento</button>
+            <div id="family-service-list" class="service-list" aria-live="polite" hidden></div>
+          </section>
+
+          <section class="family-section permissions-section" aria-labelledby="permissions-title">
+            <h3 id="permissions-title">Permissões de acesso</h3>
+            <p>Os familiares demonstrativos podem acompanhar lembretes e compromissos. Eles não recebem orientação automática para alterar doses ou tratamentos.</p>
+          </section>
+          <p class="demo-note">Esta área não substitui serviços de emergência e não compartilha dados reais.</p>
+        </section>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Navegação principal">
+        <button class="active" type="button" data-view="home" aria-current="page"><span aria-hidden="true">⌂</span>Início</button>
+        <button type="button" data-view="medications"><span aria-hidden="true"><img class="nav-capsule-image" src="/icons/capsule-realistic.png" alt="" /></span>Medicamentos</button>
+        <button type="button" data-view="consultations"><span aria-hidden="true"><svg viewBox="0 0 64 64" class="nav-svg"><rect x="9" y="13" width="46" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="5"/><path d="M9 27h46M21 7v13M43 7v13" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>Consultas</button>
+        <button type="button" data-view="family"><span aria-hidden="true"><svg viewBox="0 0 64 64" class="nav-svg"><circle cx="32" cy="19" r="8" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="15" cy="25" r="7" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="49" cy="25" r="7" fill="none" stroke="currentColor" stroke-width="5"/><path d="M18 55v-8c0-8 6-14 14-14s14 6 14 14v8M3 55v-6c0-7 5-12 12-12M61 55v-6c0-7-5-12-12-12" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>Família</button>
+      </nav>
+    </main>
+
+    <div class="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
+    <section id="call-simulation" class="call-simulation" role="dialog" aria-modal="true" aria-labelledby="call-simulation-title" hidden>
+      <div class="call-modal">
+        <p class="call-simulation-label">Simulação</p>
+        <span class="call-avatar" aria-hidden="true">☎</span>
+        <h2 id="call-simulation-title">Cuidar+ — Simulação</h2>
+        <p id="call-simulation-recipient">Chamada para Maria</p>
+        <p id="call-simulation-message" class="call-message">Ligação recebida.</p>
+        <div id="call-actions" class="call-actions"><button id="answer-simulated-call" class="primary-action" type="button">Atender</button><button id="call-confirm-receipt" class="secondary-action" type="button">Informar que tomou</button><button id="end-simulated-call" class="end-call-button" type="button">Encerrar</button></div>
+      </div>
+    </section>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

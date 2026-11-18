@@ -1,0 +1,11 @@
+{
+  "name": "cuidar-mais",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Protótipo acadêmico acessível do Cuidar+.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  }
+}
