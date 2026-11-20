@@ -180,6 +180,13 @@ test('o cartão principal usa uma cápsula realista com fundo transparente', asy
   assert.ok(capsule.readUInt32BE(20) >= 512);
 });
 
+test('a saudação usa o retrato realista da personagem demonstrativa', async () => {
+  const avatar = await readFile(new URL('../icons/dona-maria-avatar-v1.png', import.meta.url));
+  assert.match(html, /src="\/icons\/dona-maria-avatar-v1\.png"/);
+  assert.deepEqual([...avatar.subarray(1, 4)], [80, 78, 71]);
+  assert.ok(avatar.readUInt32BE(16) >= 512);
+});
+
 test('a ligação da Mostra é uma simulação registrada sem afirmar chamada real', () => {
   const state = addSimulationCallRecord(createDemoState(), { kind: 'medication', outcome: 'received', createdAt: '2026-11-18T14:00:00.000Z' });
   assert.equal(state.callHistory[0].demonstration, true);

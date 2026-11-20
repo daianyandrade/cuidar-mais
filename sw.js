@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cuidar-plus-v30';
+const CACHE_NAME = 'cuidar-plus-v31';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -9,6 +9,7 @@ const APP_SHELL = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/capsule-realistic.png',
+  '/icons/dona-maria-avatar-v1.png',
   '/icons/cuidar-plus.svg'
 ];
 
