@@ -40,9 +40,11 @@ let state = loadState();
 let calculatedTimes = [];
 let editingMedicationId = null;
 let finderUnits = [];
+let finderLocation = null;
 let finderMap = null;
 let finderMarkers = new Map();
 let finderPayload = null;
+const FINDER_RADIUS_KM = 10;
 const demonstrationServices = [
   { specialty: 'geriatria', type: 'SUS', name: 'Atendimento em geriatria — exemplo', description: 'Exemplo de local que pode oferecer cuidado à pessoa idosa. Confirme a necessidade de encaminhamento e a disponibilidade.' },
   { specialty: 'exames', type: 'Particular', name: 'Laboratório — exemplo', description: 'Exemplo de local para realização de exames. Confirme preparo, valores e disponibilidade diretamente com a unidade.' },
@@ -246,7 +248,7 @@ function renderMedicationList() {
 function focusMedicineFinder() {
   showView('finder');
   finderSearchButton.focus({ preventScroll: true });
-  showToast('Encontre uma unidade e confirme o estoque no portal oficial.');
+  showToast('Encontre unidades em até 10 km e confirme o estoque no portal oficial.');
 }
 
 function formatFinderDate(value) {
@@ -254,8 +256,31 @@ function formatFinderDate(value) {
   return Number.isNaN(date.getTime()) ? 'data não informada' : new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(date);
 }
 
+function getFinderDistance(unit) {
+  if (!finderLocation || !unit.coordinates) return null;
+  const toRadians = (value) => value * Math.PI / 180;
+  const latitudeDifference = toRadians(unit.coordinates.latitude - finderLocation.latitude);
+  const longitudeDifference = toRadians(unit.coordinates.longitude - finderLocation.longitude);
+  const startLatitude = toRadians(finderLocation.latitude);
+  const endLatitude = toRadians(unit.coordinates.latitude);
+  const arc = Math.sin(latitudeDifference / 2) ** 2
+    + Math.cos(startLatitude) * Math.cos(endLatitude) * Math.sin(longitudeDifference / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(arc), Math.sqrt(1 - arc));
+}
+
+function formatFinderDistance(distance) {
+  if (distance < 1) return `${Math.round(distance * 1000)} m`;
+  return `${distance.toFixed(1).replace('.', ',')} km`;
+}
+
 function finderUnitsForDisplay() {
-  return [...finderUnits].sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'));
+  const units = finderUnits.map((unit) => ({ ...unit, distance: getFinderDistance(unit) }));
+  const visibleUnits = finderLocation
+    ? units.filter((unit) => unit.distance !== null && unit.distance <= FINDER_RADIUS_KM)
+    : units;
+  return visibleUnits.sort((left, right) => finderLocation
+    ? left.distance - right.distance
+    : left.name.localeCompare(right.name, 'pt-BR'));
 }
 
 function finderDirectionsUrl(unit) {
@@ -315,6 +340,14 @@ function renderFinderMap(units) {
     bounds.push(coordinates);
   });
 
+  if (finderLocation) {
+    const locationCoordinates = [finderLocation.latitude, finderLocation.longitude];
+    window.L.circleMarker(locationCoordinates, {
+      radius: 8, color: '#5b2b8f', fillColor: '#7b3fb2', fillOpacity: 1, weight: 2
+    }).addTo(finderMap).bindPopup('Sua localização aproximada');
+    bounds.push(locationCoordinates);
+  }
+
   finderMap.fitBounds(bounds, { padding: [28, 28], maxZoom: 14 });
   window.setTimeout(() => finderMap.invalidateSize(), 0);
 }
@@ -324,7 +357,9 @@ function renderFinderResults(payload) {
   finderResults.replaceChildren();
   const count = document.createElement('p');
   count.className = 'finder-result-count';
-  count.textContent = `${units.length} ${units.length === 1 ? 'unidade encontrada' : 'unidades encontradas'} no cadastro oficial.`;
+  count.textContent = finderLocation
+    ? `${units.length} ${units.length === 1 ? 'unidade encontrada' : 'unidades encontradas'} em até ${FINDER_RADIUS_KM} km da sua localização.`
+    : `${units.length} ${units.length === 1 ? 'unidade encontrada' : 'unidades encontradas'} no cadastro oficial.`;
   finderResults.append(count);
 
   const list = document.createElement('div');
@@ -344,7 +379,8 @@ function renderFinderResults(payload) {
     address.textContent = unit.address || 'Endereço não informado no cadastro oficial.';
     const details = document.createElement('p');
     details.className = 'finder-details';
-    details.textContent = `Cadastro atualizado em ${formatFinderDate(unit.updatedAt)}`;
+    const distance = unit.distance === null || unit.distance === undefined ? '' : ` · ${formatFinderDistance(unit.distance)} de você`;
+    details.textContent = `Cadastro atualizado em ${formatFinderDate(unit.updatedAt)}${distance}`;
     const actions = document.createElement('div');
     actions.className = 'finder-card-actions';
     if (unit.phone) {
@@ -378,7 +414,7 @@ function renderFinderResults(payload) {
   renderFinderMap(units);
 }
 
-async function loadFinderUnits() {
+async function loadFinderUnits({ fallbackMessage = '' } = {}) {
   finderSearchButton.disabled = true;
   finderStatus.textContent = 'Buscando unidades públicas cadastradas em Cuiabá…';
   try {
@@ -388,7 +424,12 @@ async function loadFinderUnits() {
     finderUnits = payload.units;
     finderPayload = payload;
     renderFinderResults(finderPayload);
-    finderStatus.textContent = 'Lista de unidades públicas carregada.';
+    const nearbyCount = finderUnitsForDisplay().length;
+    finderStatus.textContent = finderLocation
+      ? nearbyCount
+        ? `Mostrando unidades do cadastro oficial em até ${FINDER_RADIUS_KM} km.`
+        : `Não encontramos unidades cadastradas em até ${FINDER_RADIUS_KM} km. Esta busca cobre Cuiabá.`
+      : fallbackMessage || 'Lista de unidades públicas de Cuiabá carregada.';
   } catch (error) {
     finderResults.replaceChildren();
     finderMapRegion.hidden = true;
@@ -396,6 +437,27 @@ async function loadFinderUnits() {
   } finally {
     finderSearchButton.disabled = false;
   }
+}
+
+function findNearbyUnits() {
+  if (!navigator.geolocation) {
+    finderLocation = null;
+    loadFinderUnits({ fallbackMessage: 'Este aparelho não oferece localização. Mostramos a lista geral de Cuiabá.' });
+    return;
+  }
+  finderSearchButton.disabled = true;
+  finderStatus.textContent = 'Aguardando sua permissão de localização…';
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      finderLocation = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+      loadFinderUnits();
+    },
+    () => {
+      finderLocation = null;
+      loadFinderUnits({ fallbackMessage: 'Localização não autorizada. Mostramos a lista geral de Cuiabá.' });
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+  );
 }
 
 function renderHistory() {
@@ -637,7 +699,7 @@ document.querySelectorAll('[data-demo-action]').forEach((element) => element.add
 document.querySelectorAll('[data-open-medicine-finder]').forEach((button) => button.addEventListener('click', () => {
   focusMedicineFinder();
 }));
-finderSearchButton.addEventListener('click', loadFinderUnits);
+finderSearchButton.addEventListener('click', findNearbyUnits);
 document.querySelector('#repeat-reminder').addEventListener('click', speakReminder);
 document.querySelector('#simulate-reminder-call').addEventListener('click', () => openCallSimulation('medication'));
 document.querySelector('#answer-simulated-call').addEventListener('click', () => {

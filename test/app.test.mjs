@@ -190,7 +190,10 @@ test('a busca de medicamentos mantém as unidades públicas no Cuidar+ e separa 
   assert.match(html, /Esta busca não consulta o estoque municipal/);
   assert.match(script, /focusMedicineFinder/);
   assert.match(script, /fetch\('\/api\/cuiaba-units'/);
-  assert.match(html, />Encontrar unidades</);
+  assert.match(html, /Unidades perto de mim/);
+  assert.match(html, /até 10 km/);
+  assert.match(script, /FINDER_RADIUS_KM = 10/);
+  assert.match(script, /navigator\.geolocation/);
   assert.doesNotMatch(html, /finder-use-location/);
 });
 
