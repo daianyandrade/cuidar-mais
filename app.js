@@ -3,8 +3,6 @@ import { DEMO_STORAGE_KEY, acknowledgeReminderUnderstanding, addAppointment, add
 const fontToggle = document.querySelector('[data-font-toggle]');
 const toast = document.querySelector('.toast');
 const installButton = document.querySelector('#install-app');
-const headerSettingsToggle = document.querySelector('#header-settings-toggle');
-const headerQuickControls = document.querySelector('#header-quick-controls');
 const voiceMenuButton = document.querySelector('#voice-menu-toggle');
 const homeVoiceMenuButton = document.querySelector('#home-voice-menu');
 const voiceMenuStatus = document.querySelector('#voice-menu-status');
@@ -998,11 +996,6 @@ fontToggle.addEventListener('click', () => {
   fontToggle.setAttribute('aria-pressed', String(enabled));
   fontToggle.setAttribute('aria-label', enabled ? 'Voltar ao tamanho padrão do texto' : 'Aumentar tamanho do texto');
   showToast(enabled ? 'Texto aumentado.' : 'Texto no tamanho padrão.');
-});
-headerSettingsToggle.addEventListener('click', () => {
-  const isOpen = headerSettingsToggle.getAttribute('aria-expanded') === 'true';
-  headerSettingsToggle.setAttribute('aria-expanded', String(!isOpen));
-  headerQuickControls.hidden = isOpen;
 });
 voiceMenuButton.addEventListener('click', () => {
   if (menuVoiceRecognition) {
