@@ -27,9 +27,7 @@ const familyContactMessage = document.querySelector('#family-contact-message');
 const callSimulation = document.querySelector('#call-simulation');
 const callSimulationMessage = document.querySelector('#call-simulation-message');
 const callSimulationRecipient = document.querySelector('#call-simulation-recipient');
-const finderMedicationInput = document.querySelector('#finder-medication-input');
 const finderSearchButton = document.querySelector('#finder-search');
-const finderLocationButton = document.querySelector('#finder-use-location');
 const finderStatus = document.querySelector('#finder-status');
 const finderResults = document.querySelector('#finder-results');
 const finderMapRegion = document.querySelector('#finder-map-region');
@@ -41,7 +39,6 @@ let state = loadState();
 let calculatedTimes = [];
 let editingMedicationId = null;
 let finderUnits = [];
-let finderLocation = null;
 let finderMap = null;
 let finderMarkers = new Map();
 let finderPayload = null;
@@ -243,11 +240,10 @@ function renderMedicationList() {
   });
 }
 
-function focusMedicineFinder(medicationName) {
-  finderMedicationInput.value = medicationName;
+function focusMedicineFinder() {
   document.querySelector('#medicine-finder').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  finderMedicationInput.focus({ preventScroll: true });
-  showToast('Medicamento preenchido. Busque as unidades e confirme o estoque no portal oficial.');
+  finderSearchButton.focus({ preventScroll: true });
+  showToast('Encontre uma unidade e confirme o estoque no portal oficial.');
 }
 
 function formatFinderDate(value) {
@@ -255,28 +251,8 @@ function formatFinderDate(value) {
   return Number.isNaN(date.getTime()) ? 'data não informada' : new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(date);
 }
 
-function getFinderDistance(unit) {
-  if (!finderLocation || !unit.coordinates) return null;
-  const toRadians = (value) => value * Math.PI / 180;
-  const earthRadiusKm = 6371;
-  const latitudeDifference = toRadians(unit.coordinates.latitude - finderLocation.latitude);
-  const longitudeDifference = toRadians(unit.coordinates.longitude - finderLocation.longitude);
-  const latitudeStart = toRadians(finderLocation.latitude);
-  const latitudeEnd = toRadians(unit.coordinates.latitude);
-  const arc = Math.sin(latitudeDifference / 2) ** 2
-    + Math.cos(latitudeStart) * Math.cos(latitudeEnd) * Math.sin(longitudeDifference / 2) ** 2;
-  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(arc), Math.sqrt(1 - arc));
-}
-
 function finderUnitsForDisplay() {
-  return [...finderUnits].sort((left, right) => {
-    const leftDistance = getFinderDistance(left);
-    const rightDistance = getFinderDistance(right);
-    if (leftDistance !== null && rightDistance !== null) return leftDistance - rightDistance;
-    if (leftDistance !== null) return -1;
-    if (rightDistance !== null) return 1;
-    return left.name.localeCompare(right.name, 'pt-BR');
-  });
+  return [...finderUnits].sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'));
 }
 
 function finderDirectionsUrl(unit) {
@@ -336,31 +312,17 @@ function renderFinderMap(units) {
     bounds.push(coordinates);
   });
 
-  if (finderLocation) {
-    window.L.circleMarker([finderLocation.latitude, finderLocation.longitude], {
-      radius: 8, color: '#5b2b8f', fillColor: '#7b3fb2', fillOpacity: 1, weight: 2
-    }).addTo(finderMap).bindPopup('Sua localização aproximada');
-    bounds.push([finderLocation.latitude, finderLocation.longitude]);
-  }
   finderMap.fitBounds(bounds, { padding: [28, 28], maxZoom: 14 });
   window.setTimeout(() => finderMap.invalidateSize(), 0);
 }
 
 function renderFinderResults(payload) {
   const units = finderUnitsForDisplay();
-  const medication = finderMedicationInput.value.trim();
   finderResults.replaceChildren();
   const count = document.createElement('p');
   count.className = 'finder-result-count';
   count.textContent = `${units.length} ${units.length === 1 ? 'unidade encontrada' : 'unidades encontradas'} no cadastro oficial.`;
   finderResults.append(count);
-
-  if (medication) {
-    const medicationNote = document.createElement('p');
-    medicationNote.className = 'finder-medication-note';
-    medicationNote.textContent = `O CNES não informa estoque de “${medication}”. Para confirmar a disponibilidade, use “Consultar estoque oficial”.`;
-    finderResults.append(medicationNote);
-  }
 
   const list = document.createElement('div');
   list.className = 'finder-results-list';
@@ -379,9 +341,7 @@ function renderFinderResults(payload) {
     address.textContent = unit.address || 'Endereço não informado no cadastro oficial.';
     const details = document.createElement('p');
     details.className = 'finder-details';
-    const distance = getFinderDistance(unit);
-    const distanceText = distance === null ? '' : ` · ${distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1).replace('.', ',')} km`} de você`;
-    details.textContent = `Cadastro atualizado em ${formatFinderDate(unit.updatedAt)}${distanceText}`;
+    details.textContent = `Cadastro atualizado em ${formatFinderDate(unit.updatedAt)}`;
     const actions = document.createElement('div');
     actions.className = 'finder-card-actions';
     if (unit.phone) {
@@ -417,7 +377,6 @@ function renderFinderResults(payload) {
 
 async function loadFinderUnits() {
   finderSearchButton.disabled = true;
-  finderLocationButton.disabled = true;
   finderStatus.textContent = 'Buscando unidades públicas cadastradas em Cuiabá…';
   try {
     const response = await fetch('/api/cuiaba-units', { headers: { accept: 'application/json' } });
@@ -426,44 +385,14 @@ async function loadFinderUnits() {
     finderUnits = payload.units;
     finderPayload = payload;
     renderFinderResults(finderPayload);
-    finderStatus.textContent = finderLocation
-      ? 'Unidades ordenadas pela distância aproximada da sua localização.'
-      : 'Lista carregada. Você pode usar sua localização para ordenar por proximidade.';
+    finderStatus.textContent = 'Lista de unidades públicas carregada.';
   } catch (error) {
     finderResults.replaceChildren();
     finderMapRegion.hidden = true;
     finderStatus.textContent = error instanceof Error ? `${error.message} Tente novamente em alguns minutos.` : 'Não foi possível carregar a lista agora. Tente novamente em alguns minutos.';
   } finally {
     finderSearchButton.disabled = false;
-    finderLocationButton.disabled = false;
   }
-}
-
-function requestFinderLocation() {
-  if (!navigator.geolocation) {
-    finderStatus.textContent = 'Este aparelho não oferece localização. Você ainda pode buscar as unidades pelo nome.';
-    return;
-  }
-  finderLocationButton.disabled = true;
-  finderStatus.textContent = 'Aguardando sua permissão de localização…';
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      finderLocation = { latitude: position.coords.latitude, longitude: position.coords.longitude };
-      finderLocationButton.disabled = false;
-      if (finderUnits.length) {
-        renderFinderResults(finderPayload);
-        finderStatus.textContent = 'Unidades ordenadas pela distância aproximada da sua localização.';
-      } else {
-        finderStatus.textContent = 'Localização usada somente neste aparelho. Agora buscaremos as unidades próximas.';
-        loadFinderUnits();
-      }
-    },
-    () => {
-      finderLocationButton.disabled = false;
-      finderStatus.textContent = 'Não foi possível usar sua localização. Você ainda pode buscar as unidades por nome.';
-    },
-    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
-  );
 }
 
 function renderHistory() {
@@ -698,10 +627,9 @@ document.querySelectorAll('[data-view]').forEach((element) => element.addEventLi
 document.querySelectorAll('[data-demo-action]').forEach((element) => element.addEventListener('click', () => showFutureMessage(element.dataset.demoAction)));
 document.querySelectorAll('[data-open-medicine-finder]').forEach((button) => button.addEventListener('click', () => {
   showView('medications');
-  window.setTimeout(() => focusMedicineFinder(finderMedicationInput.value), 0);
+  window.setTimeout(focusMedicineFinder, 0);
 }));
 finderSearchButton.addEventListener('click', loadFinderUnits);
-finderLocationButton.addEventListener('click', requestFinderLocation);
 document.querySelector('#repeat-reminder').addEventListener('click', speakReminder);
 document.querySelector('#simulate-reminder-call').addEventListener('click', () => openCallSimulation('medication'));
 document.querySelector('#answer-simulated-call').addEventListener('click', () => {

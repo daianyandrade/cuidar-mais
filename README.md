@@ -49,7 +49,7 @@ A busca interna localiza **postos de saúde** e **unidades básicas de saúde** 
 - campos exibidos somente quando presentes na fonte: nome, endereço, telefone, coordenadas e data de atualização do cadastro;
 - cache no servidor: 6 horas, com possibilidade de servir a versão recente por até 24 horas enquanto atualiza.
 
-O nome do medicamento não é enviado ao backend e a localização, quando autorizada, é usada apenas no navegador para ordenar as unidades por distância aproximada. A data nos cartões é a atualização do cadastro CNES, não uma atualização de estoque.
+O Cuidar+ não envia dados pessoais ao backend. A tela mostra um único botão para carregar a lista de unidades; a data nos cartões é a atualização do cadastro CNES, não uma atualização de estoque.
 
 O portal municipal de estoque é mantido apenas como o botão externo **Consultar estoque oficial**. A página pública foi analisada, mas não foi localizada uma API pública documentada, exportação autorizada ou licença de reutilização para reproduzir seus dados internos no Cuidar+. Por isso o aplicativo não copia nem afirma disponibilidade, quantidade ou validade de medicamentos.
 

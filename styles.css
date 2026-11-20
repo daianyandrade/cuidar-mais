@@ -72,13 +72,8 @@ h1 { margin: 0; font-size: clamp(1.65rem, 7vw, 2.12rem); letter-spacing: -.045em
 .help-card strong { display: block; font-size: 1.22rem; letter-spacing: -.025em; }
 .help-card small { display: block; margin-top: 2px; color: #273f5b; font-size: .91rem; font-weight: 600; }
 .help-arrow { font-size: 3rem; font-weight: 300; }
-.nearby-medicines { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center; margin-top: 20px; padding: 18px; border: 1px solid #c4e7ce; border-radius: 21px; background: linear-gradient(135deg, #effff2, #dff8e6); }
-.nearby-medicines h2 { margin: 0; color: #075d29; font-size: 1.24rem; letter-spacing: -.02em; }
-.nearby-medicines p { margin: 6px 0 0; color: #385a48; font-size: .9rem; font-weight: 600; line-height: 1.32; }
-.nearby-medicines button { min-height: 46px; padding: 9px 11px; border: 2px solid #087d2e; border-radius: 12px; color: white; background: #087d2e; cursor: pointer; font-weight: 800; }
 #home-view > .shortcut-grid { order: 1; }
-#home-view > .nearby-medicines { order: 2; }
-#home-view > .medicine-card { order: 3; margin-top: 20px; min-height: 118px; grid-template-columns: 62px 1fr 25px; gap: 11px; padding: 16px; border: 1px solid #bde2c7; border-radius: 21px; color: #173456; background: linear-gradient(135deg, #f4fff6, #ddf8e4); box-shadow: none; }
+#home-view > .medicine-card { order: 2; margin-top: 20px; min-height: 118px; grid-template-columns: 62px 1fr 25px; gap: 11px; padding: 16px; border: 1px solid #bde2c7; border-radius: 21px; color: #173456; background: linear-gradient(135deg, #f4fff6, #ddf8e4); box-shadow: none; }
 #home-view > .medicine-card .focus-label { display: none; }
 #home-view > .medicine-card .medicine-icon { transform: none; }
 #home-view > .medicine-card .medicine-icon-image { width: 61px; height: 61px; }
@@ -86,13 +81,13 @@ h1 { margin: 0; font-size: clamp(1.65rem, 7vw, 2.12rem); letter-spacing: -.045em
 #home-view > .medicine-card .medicine-copy h2 { color: #173456; font-size: 1.3rem; line-height: 1.05; }
 #home-view > .medicine-card .medicine-copy p { color: #405a70; font-size: .88rem; }
 #home-view > .medicine-card .card-arrow { color: #087d2e; font-size: 3rem; }
-#home-view > #home-reminder-status { order: 4; }
-#home-view > .reminder-actions { order: 5; }
-#home-view > .call-demo-button { order: 6; }
-#home-view > #daily-summary { order: 7; }
-#home-view > .help-card { order: 8; }
-#home-view > .install-app { order: 9; }
-#home-view > .demo-note { order: 10; }
+#home-view > #home-reminder-status { order: 3; }
+#home-view > .reminder-actions { order: 4; }
+#home-view > .call-demo-button { order: 5; }
+#home-view > #daily-summary { order: 6; }
+#home-view > .help-card { order: 7; }
+#home-view > .install-app { order: 8; }
+#home-view > .demo-note { order: 9; }
 .install-app { display: grid; width: 100%; min-height: 76px; grid-template-columns: 45px 1fr; gap: 8px; align-items: center; margin-top: 13px; padding: 12px 17px; border: 2px solid #0a9236; border-radius: 20px; color: #075d29; text-align: left; background: #f2fff4; cursor: pointer; }
 .install-app > span:first-child { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 50%; color: white; background: var(--green); font-size: 1.7rem; font-weight: 800; line-height: 1; }
 .install-app strong { display: block; font-size: 1.08rem; }
@@ -181,7 +176,7 @@ html.large-text { font-size: 118%; }
 .medicine-finder label { display: block; color: #193851; font-size: .96rem; font-weight: 800; }
 .optional-label { color: #536d5d; font-size: .85rem; font-weight: 700; }
 .medicine-finder input { display: block; width: 100%; min-height: 52px; margin-top: 7px; padding: 11px 13px; border: 2px solid #a9cdb1; border-radius: 13px; color: #152f4e; background: white; font: inherit; font-size: 1rem; }
-.finder-actions { display: grid; grid-template-columns: 1.35fr 1fr; gap: 10px; margin-top: 14px; }
+.finder-actions { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
 .finder-actions button { min-height: 54px; }
 .finder-actions button:disabled { border-color: #adb9c2; color: #687783; background: #e9eef1; cursor: wait; }
 .finder-status { min-height: 24px; margin: 12px 1px 0 !important; color: #315c41 !important; font-size: .9rem !important; font-weight: 700; }
@@ -205,11 +200,11 @@ html.large-text { font-size: 118%; }
 .finder-source { margin: 3px 0 0; color: #5b6879; font-size: .78rem; line-height: 1.35; }
 .official-coverage { display: grid; gap: 6px; margin-top: 16px; padding: 13px; border-radius: 14px; color: #244963; background: #dff2ff; font-size: .9rem; line-height: 1.35; }
 .official-coverage strong { color: #0e527f; }
-.official-coverage a { width: fit-content; min-height: 42px; padding: 10px 12px; border-radius: 10px; color: white; text-decoration: none; background: #0e5c8e; font-weight: 800; }
+.official-coverage a { width: fit-content; color: #0e527f; text-decoration: underline; font-weight: 800; }
 .finder-sources { margin-top: 14px; border-top: 1px solid #c9e4d0; }
 .finder-sources summary { padding: 12px 0 4px; color: #075d29; cursor: pointer; font-size: .92rem; font-weight: 800; }
 .finder-sources p { margin: 8px 0 0; color: #466055; font-size: .84rem; line-height: 1.35; }
-@media (max-width: 380px) { .finder-actions { grid-template-columns: 1fr; } .nearby-medicines { grid-template-columns: 1fr; } .nearby-medicines button { width: 100%; } }
+@media (max-width: 380px) { .finder-actions { grid-template-columns: 1fr; } }
 
 /* Consultas e exames demonstrativos */
 .consultation-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 20px 0; padding: 5px; border-radius: 15px; background: #e7f1f7; }

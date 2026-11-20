@@ -176,10 +176,11 @@ test('a busca de medicamentos mantém as unidades públicas no Cuidar+ e separa 
   assert.match(html, /id="finder-search"/);
   assert.match(html, /estoque-farmacias-cuiaba\.web\.app/);
   assert.match(html, /Consultar estoque oficial/);
-  assert.match(html, /A busca abaixo não consulta o estoque municipal/);
+  assert.match(html, /Esta busca não consulta o estoque municipal/);
   assert.match(script, /focusMedicineFinder/);
   assert.match(script, /fetch\('\/api\/cuiaba-units'/);
-  assert.match(script, /navigator\.geolocation/);
+  assert.match(html, />Encontrar unidades</);
+  assert.doesNotMatch(html, /finder-use-location/);
 });
 
 test('a integração normaliza somente campos oficiais do CNES e preserva a atualização do cadastro', async () => {

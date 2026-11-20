@@ -87,19 +87,11 @@
             <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><rect x="13" y="12" width="38" height="43" rx="5" fill="none" stroke="currentColor" stroke-width="5"/><rect x="24" y="7" width="16" height="10" rx="3" fill="white" stroke="currentColor" stroke-width="5"/><path d="M22 30l4 4 7-8M22 43l4 4 7-8M38 30h6M38 43h6" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             <span><strong>Minha<br />agenda</strong><small>Organize compromissos</small></span>
           </button>
-          <button data-open-medicine-finder class="shortcut-card green" type="button">
-            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><path d="M32 57s18-17 18-31a18 18 0 1 0-36 0c0 14 18 31 18 31Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><circle cx="32" cy="26" r="6" fill="currentColor"/></svg></span>
-            <span><strong>Unidades<br />de saúde</strong><small>Veja no mapa</small></span>
+          <button class="shortcut-card green" type="button" data-view="family">
+            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><circle cx="32" cy="20" r="9" fill="none" stroke="currentColor" stroke-width="5"/><path d="M14 57v-7c0-10 8-17 18-17s18 7 18 17v7" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>
+            <span><strong>Minha<br />família</strong><small>Apoio de quem cuida</small></span>
           </button>
         </div>
-
-        <section class="nearby-medicines" aria-labelledby="nearby-medicines-title">
-          <div>
-            <h2 id="nearby-medicines-title">Medicamentos perto de você</h2>
-            <p>Veja unidades públicas cadastradas em Cuiabá e confirme o estoque no portal oficial.</p>
-          </div>
-          <button data-open-medicine-finder type="button">Encontrar unidades</button>
-        </section>
 
         <button class="help-card" type="button" data-demo-action="Pedir ajuda a um contato cadastrado">
           <span class="help-icon" aria-hidden="true">i</span>
@@ -134,15 +126,11 @@
           <section id="medicine-finder" class="medication-section medicine-finder" aria-labelledby="medicine-finder-title">
             <p class="finder-kicker">Cuiabá · unidades públicas</p>
             <h3 id="medicine-finder-title">Encontrar medicamentos</h3>
-            <p>Encontre postos e unidades básicas de saúde cadastrados oficialmente. A busca abaixo não consulta o estoque municipal.</p>
-            <label for="finder-medication-input">Medicamento que você procura <span class="optional-label">(opcional)</span>
-              <input id="finder-medication-input" type="search" autocomplete="off" maxlength="100" placeholder="Ex.: nome conforme a receita" />
-            </label>
+            <p>Encontre postos e unidades básicas de saúde cadastrados oficialmente em Cuiabá.</p>
             <div class="finder-actions">
-              <button id="finder-search" class="primary-action" type="button">Buscar unidades</button>
-              <button id="finder-use-location" class="secondary-action" type="button">Usar minha localização</button>
+              <button id="finder-search" class="primary-action" type="button">Encontrar unidades</button>
             </div>
-            <p id="finder-status" class="finder-status" role="status" aria-live="polite">Informe um medicamento se desejar e toque em “Buscar unidades”.</p>
+            <p id="finder-status" class="finder-status" role="status" aria-live="polite">Toque no botão para ver as unidades públicas cadastradas.</p>
             <div id="finder-results" class="finder-results" aria-live="polite"></div>
             <section id="finder-map-region" class="finder-map-region" aria-labelledby="finder-map-title" hidden>
               <h4 id="finder-map-title">Unidades no mapa</h4>
@@ -157,7 +145,7 @@
             <details class="finder-sources">
               <summary>Fonte e limites desta busca</summary>
               <p>Unidades: Cadastro Nacional de Estabelecimentos de Saúde (CNES), Ministério da Saúde. A data exibida em cada cartão é a atualização do cadastro da unidade, não do estoque.</p>
-              <p>O Cuidar+ não envia o nome do medicamento nem sua localização ao consultar a lista. Sua localização só é usada neste aparelho, se você permitir.</p>
+              <p>Esta busca não consulta o estoque municipal. O Cuidar+ não envia dados pessoais ao carregar a lista.</p>
             </details>
           </section>
 
