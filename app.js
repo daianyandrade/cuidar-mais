@@ -793,4 +793,5 @@ if ('serviceWorker' in navigator) {
 
 resetProgramming();
 render();
+showView('home');
 updateInstallButton();

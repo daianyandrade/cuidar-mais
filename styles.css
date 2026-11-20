@@ -16,6 +16,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body { min-width: 320px; margin: 0; background: radial-gradient(circle at 12% 96%, #b8f2c9 0, transparent 23%), #f6fbfd; }
 button, a { font: inherit; }
