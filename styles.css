@@ -131,6 +131,11 @@ html.large-text { font-size: 118%; }
 .medication-item strong { display: block; color: #173456; font-size: 1.02rem; }
 .medication-item p { margin: 3px 0 0; color: #46566b; font-size: .87rem; line-height: 1.3; }
 .medication-item .notes { margin-top: 8px; color: #506278; font-size: .79rem; }
+.medication-item-actions { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 9px; margin-top: 14px; }
+.medication-list-action { min-height: 48px; padding: 9px 10px; border: 2px solid #087d2e; border-radius: 12px; color: white; background: #087d2e; cursor: pointer; font-size: .88rem; font-weight: 800; line-height: 1.15; }
+.medication-list-action.edit-medication { border-color: #17608f; color: #164c72; background: white; }
+.medication-list-action:hover { filter: brightness(.96); }
+@media (max-width: 380px) { .medication-item-actions { grid-template-columns: 1fr; } }
 .medicine-form-panel { margin-top: 22px; border: 1px solid #bee3c7; border-radius: 18px; background: #f5fff7; }
 .medicine-form-panel summary { padding: 16px; color: #075d29; cursor: pointer; font-weight: 800; }
 .medicine-form-panel form, .form-intro { margin-left: 16px; margin-right: 16px; }

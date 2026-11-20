@@ -228,8 +228,10 @@ function renderMedicationList() {
       ${period ? `<p>${escapeHtml(period)}</p>` : ''}
       ${programming ? `<p class="programming-details">${escapeHtml(programming)}</p>` : ''}
       ${medication.notes ? `<p class="notes">${escapeHtml(medication.notes)}</p>` : ''}
-      <button class="text-button find-medication" type="button" data-find-medication="${escapeHtml(medication.name)}">Encontrar onde retirar</button>
-      <button class="text-button edit-medication" type="button" data-edit-medication="${escapeHtml(medication.id)}">Editar programação</button>
+      <div class="medication-item-actions">
+        <button class="medication-list-action find-medication" type="button" data-find-medication="${escapeHtml(medication.name)}">Encontrar unidades</button>
+        <button class="medication-list-action edit-medication" type="button" data-edit-medication="${escapeHtml(medication.id)}">Editar programação</button>
+      </div>
     </div></article>`;
   }).join('');
   list.querySelectorAll('[data-edit-medication]').forEach((button) => {

@@ -183,6 +183,14 @@ test('a busca de medicamentos mantém as unidades públicas no Cuidar+ e separa 
   assert.doesNotMatch(html, /finder-use-location/);
 });
 
+test('os medicamentos cadastrados oferecem botões grandes para encontrar unidades e editar a programação', async () => {
+  const styles = await readFile(new URL('../styles.css', import.meta.url), 'utf8');
+  assert.match(script, /medication-item-actions/);
+  assert.match(script, />Encontrar unidades</);
+  assert.match(script, />Editar programação</);
+  assert.match(styles, /\.medication-list-action\s*\{[^}]*min-height:\s*48px/s);
+});
+
 test('a integração normaliza somente campos oficiais do CNES e preserva a atualização do cadastro', async () => {
   const record = {
     codigo_cnes: '1234567', nome_fantasia: 'UNIDADE TESTE', endereco_estabelecimento: 'Rua Exemplo',
