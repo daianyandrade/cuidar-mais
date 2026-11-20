@@ -119,10 +119,11 @@ h1 { margin: 0; font-size: clamp(1.62rem, 6.8vw, 2.12rem); letter-spacing: -.05e
 #home-view > .shortcut-grid .shortcut-card.orange .shortcut-icon { color: white; background: linear-gradient(135deg, #ffae18, #df7400); }
 #home-view > .shortcut-grid .shortcut-card.purple { background: linear-gradient(135deg, #fbf9ff, #e0cffd); }
 #home-view > .shortcut-grid .shortcut-card.purple .shortcut-icon { color: white; background: linear-gradient(135deg, #8d62d7, #5c329c); }
-.home-voice-action { position: relative; z-index: 1; display: grid; width: 100%; min-height: 82px; grid-column: 1 / -1; grid-template-columns: 50px 1fr; gap: 10px; align-items: center; margin-top: 1px; padding: 10px 15px; border: 3px solid #91f79f; border-radius: 28px; color: white; text-align: left; background: radial-gradient(circle at 13% 20%, #43df61, transparent 29%), linear-gradient(115deg, #0aa33d, #057027); box-shadow: 0 0 0 4px rgba(115, 255, 139, .19), 0 8px 17px rgba(6, 127, 46, .24); cursor: pointer; }
-.home-voice-icon { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 50%; color: white; font-size: 1.7rem; font-weight: 900; }
-.home-voice-icon svg { width: 34px; height: 34px; }
-.home-voice-action strong { display: block; font-size: 1.17rem; line-height: 1.02; }
+.home-voice-action { position: relative; z-index: 1; display: grid; width: 100%; min-height: 76px; grid-column: 1 / -1; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; align-items: center; margin-top: 1px; padding: 9px 12px; border: 2px solid #91f79f; border-radius: 25px; color: white; text-align: left; background: radial-gradient(circle at 13% 20%, #43df61, transparent 29%), linear-gradient(115deg, #0aa33d, #057027); box-shadow: 0 0 0 4px rgba(115, 255, 139, .19), 0 8px 17px rgba(6, 127, 46, .24); cursor: pointer; }
+.home-voice-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; color: white; font-size: 1.7rem; font-weight: 900; }
+.home-voice-icon svg { width: 31px; height: 31px; }
+.home-voice-action strong { display: block; font-size: 1rem; line-height: 1.03; }
+.home-voice-action strong span { display: block; white-space: nowrap; }
 .home-voice-action small { display: none; }
 .reminder-control-panel { margin-top: 17px; padding: 14px; border: 1px solid #bfe4c8; border-radius: 19px; background: #f4fff6; }
 .reminder-control-panel .reminder-status { margin: 0 0 10px; }
@@ -142,7 +143,7 @@ h1 { margin: 0; font-size: clamp(1.62rem, 6.8vw, 2.12rem); letter-spacing: -.05e
 
 html.large-text { font-size: 118%; }
 @media (min-width: 600px) { .app-shell { margin-top: 18px; margin-bottom: 18px; min-height: calc(100vh - 36px); border-radius: 26px; } .bottom-nav { bottom: 18px; border-radius: 0 0 26px 26px; } }
-@media (min-width: 390px) { .welcome { grid-template-columns: 92px minmax(0, 1fr) 142px; } .home-voice-action { grid-column: 3; grid-row: 1; min-height: 102px; grid-template-columns: 45px 1fr; padding: 10px 9px; } .home-voice-action strong { font-size: 1.13rem; } .home-voice-icon { width: 45px; height: 45px; } }
+@media (min-width: 390px) { .welcome { grid-template-columns: 92px minmax(0, 1fr) 142px; } .home-voice-action { grid-column: 3; grid-row: 1; min-height: 96px; grid-template-columns: 41px minmax(0, 1fr); padding: 9px 8px; } .home-voice-action strong { font-size: .98rem; } .home-voice-icon { width: 41px; height: 41px; } }
 @media (max-width: 380px) { .brand-word { font-size: 2.35rem; } .brand-mark { width: 50px; height: 47px; } .tagline { margin-left: 64px; } .profile-avatar { width: 78px; height: 78px; } .shortcut-card { grid-template-columns: 39px 1fr; padding: 16px 9px; } .shortcut-card strong { font-size: 1.04rem; } .medicine-copy h2 { font-size: 1.62rem; } .medicine-card { grid-template-columns: 75px 1fr 25px; padding-left: 11px; } .medicine-icon { font-size: 3.4rem; } #home-view > .home-summary-grid > .medicine-card, .appointment-summary-card { min-height: 164px; padding-left: 10px; padding-right: 10px; } #home-view > .shortcut-grid .shortcut-card { min-height: 184px; padding-left: 10px; padding-right: 10px; } #home-view > .shortcut-grid .shortcut-card strong { font-size: 1.04rem; } .bottom-nav a, .bottom-nav button { font-size: .62rem; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
