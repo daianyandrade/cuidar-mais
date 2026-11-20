@@ -194,6 +194,13 @@ test('a busca de medicamentos mantém as unidades públicas no Cuidar+ e separa 
   assert.doesNotMatch(html, /finder-use-location/);
 });
 
+test('a busca de unidades abre em uma tela própria, separada da lista de medicamentos', () => {
+  assert.match(html, /id="finder-view" class="app-view"/);
+  assert.match(html, /data-view="medications">‹ Voltar/);
+  assert.match(script, /const finderView = document\.querySelector\('#finder-view'\)/);
+  assert.match(script, /showView\('finder'\)/);
+});
+
 test('os medicamentos cadastrados oferecem botões grandes para encontrar unidades e editar a programação', async () => {
   const styles = await readFile(new URL('../styles.css', import.meta.url), 'utf8');
   assert.match(script, /medication-item-actions/);

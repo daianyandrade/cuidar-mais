@@ -5,6 +5,7 @@ const toast = document.querySelector('.toast');
 const installButton = document.querySelector('#install-app');
 const homeView = document.querySelector('#home-view');
 const medicationsView = document.querySelector('#medications-view');
+const finderView = document.querySelector('#finder-view');
 const consultationsView = document.querySelector('#consultations-view');
 const familyView = document.querySelector('#family-view');
 const welcome = document.querySelector('.welcome');
@@ -243,7 +244,7 @@ function renderMedicationList() {
 }
 
 function focusMedicineFinder() {
-  document.querySelector('#medication-nearby').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showView('finder');
   finderSearchButton.focus({ preventScroll: true });
   showToast('Encontre uma unidade e confirme o estoque no portal oficial.');
 }
@@ -465,21 +466,27 @@ function renderFamily() {
 
 function render() { renderHome(); renderMedicationList(); renderHistory(); renderAppointments(); renderFamily(); }
 function showView(view) {
+  const finder = view === 'finder';
   const medications = view === 'medications';
   const consultations = view === 'consultations';
   const family = view === 'family';
-  homeView.hidden = medications || consultations || family;
+  const home = !finder && !medications && !consultations && !family;
+  homeView.hidden = !home;
   medicationsView.hidden = !medications;
+  finderView.hidden = !finder;
   consultationsView.hidden = !consultations;
   familyView.hidden = !family;
-  welcome.hidden = medications || consultations || family;
+  welcome.hidden = !home;
+  const activeNavigation = finder ? 'medications' : medications ? 'medications' : consultations ? 'consultations' : family ? 'family' : 'home';
   document.querySelectorAll('.bottom-nav [data-view]').forEach((button) => {
-    const active = button.dataset.view === (medications ? 'medications' : consultations ? 'consultations' : family ? 'family' : 'home');
+    const active = button.dataset.view === activeNavigation;
     button.classList.toggle('active', active);
     if (active) button.setAttribute('aria-current', 'page'); else button.removeAttribute('aria-current');
   });
+  const pageTitles = { home: 'Início', medications: 'Meus medicamentos', finder: 'Encontrar medicamentos', consultations: 'Consultas e exames', family: 'Minha família' };
+  document.title = `Cuidar+ | ${pageTitles[view] || pageTitles.home}`;
   document.querySelector('#conteudo').focus({ preventScroll: true });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 function speakReminder() {
@@ -628,8 +635,7 @@ document.querySelector('[data-read-page]').addEventListener('click', () => medic
 document.querySelectorAll('[data-view]').forEach((element) => element.addEventListener('click', () => showView(element.dataset.view)));
 document.querySelectorAll('[data-demo-action]').forEach((element) => element.addEventListener('click', () => showFutureMessage(element.dataset.demoAction)));
 document.querySelectorAll('[data-open-medicine-finder]').forEach((button) => button.addEventListener('click', () => {
-  showView('medications');
-  window.setTimeout(focusMedicineFinder, 0);
+  focusMedicineFinder();
 }));
 finderSearchButton.addEventListener('click', loadFinderUnits);
 document.querySelector('#repeat-reminder').addEventListener('click', speakReminder);
