@@ -4,6 +4,7 @@ const fontToggle = document.querySelector('[data-font-toggle]');
 const toast = document.querySelector('.toast');
 const installButton = document.querySelector('#install-app');
 const voiceMenuButton = document.querySelector('#voice-menu-toggle');
+const homeVoiceMenuButton = document.querySelector('#home-voice-menu');
 const voiceMenuStatus = document.querySelector('#voice-menu-status');
 const homeView = document.querySelector('#home-view');
 const medicationsView = document.querySelector('#medications-view');
@@ -325,10 +326,26 @@ function getUpcomingReminder() {
 function renderHome() {
   const reminder = getUpcomingReminder();
   const medication = reminder ? getMedication(state, reminder.medicationId) : null;
+  const medicineTitle = document.querySelector('#medicine-title');
+  const medicineKicker = document.querySelector('#home-view .medicine-card .card-kicker');
+  medicineTitle.textContent = medication ? `${medication.name} ${medication.dosage}` : 'Sem lembretes';
+  medicineKicker.textContent = 'Próximo medicamento';
   document.querySelector('#home-reminder-details').innerHTML = medication
     ? `${escapeHtml(medication.name)} ${escapeHtml(medication.dosage)} às <strong>${escapeHtml(reminder.time)}</strong>`
     : 'Não há outro lembrete programado para agora.';
   document.querySelector('.focus-label').innerHTML = `<span aria-hidden="true">●</span> Próximo lembrete${reminder ? ` · ${reminderDayLabel(reminder)}` : ''}`;
+  const appointment = [...(state.appointments ?? [])]
+    .sort((first, second) => `${first.date}${first.time}`.localeCompare(`${second.date}${second.time}`))[0];
+  const appointmentTitle = document.querySelector('#home-appointment-title');
+  const appointmentDetails = document.querySelector('#home-appointment-details');
+  if (appointment) {
+    const calendar = formatAppointmentDate(appointment.date);
+    appointmentTitle.textContent = appointment.title;
+    appointmentDetails.textContent = `${calendar.day} ${calendar.month} · ${appointment.time}`;
+  } else {
+    appointmentTitle.textContent = 'Sem consulta marcada';
+    appointmentDetails.textContent = 'Organize sua agenda';
+  }
   const total = getReminderCount(state);
   document.querySelector('#daily-summary').innerHTML = `<strong>Hoje:</strong> ${total} ${total === 1 ? 'lembrete programado' : 'lembretes programados'}.`;
   const status = document.querySelector('#home-reminder-status');
@@ -688,7 +705,7 @@ function showView(view) {
   consultationsView.hidden = !consultations;
   familyView.hidden = !family;
   welcome.hidden = !home;
-  const activeNavigation = finder ? 'medications' : medications ? 'medications' : consultations ? 'consultations' : family ? 'family' : 'home';
+  const activeNavigation = finder ? 'finder' : medications ? 'medications' : consultations ? 'consultations' : family ? 'family' : 'home';
   document.querySelectorAll('.bottom-nav [data-view]').forEach((button) => {
     const active = button.dataset.view === activeNavigation;
     button.classList.toggle('active', active);
@@ -985,6 +1002,7 @@ voiceMenuButton.addEventListener('click', () => {
   }
   startMenuVoiceRecognition();
 });
+homeVoiceMenuButton.addEventListener('click', () => voiceMenuButton.click());
 document.querySelector('[data-read-page]').addEventListener('click', () => medicationsView.hidden ? speakReminder() : showToast('Use “Ouvir novamente” na tela inicial para reproduzir o lembrete.'));
 document.querySelectorAll('[data-view]').forEach((element) => element.addEventListener('click', () => showView(element.dataset.view)));
 document.querySelectorAll('[data-demo-action]').forEach((element) => element.addEventListener('click', () => showFutureMessage(element.dataset.demoAction)));

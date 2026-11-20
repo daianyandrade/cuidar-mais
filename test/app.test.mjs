@@ -8,8 +8,24 @@ const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const script = await readFile(new URL('../app.js', import.meta.url), 'utf8');
 
 test('a página inicial apresenta o cartão prioritário de medicamentos', () => {
-  assert.match(html, /Meus\s*<br\s*\/?\s*>\s*Medicamentos/);
+  assert.match(html, /id="medicine-title">Medicamentos</);
   assert.match(html, /Foco principal/);
+});
+
+test('a página inicial segue o modelo de cartões largos com voz em destaque', async () => {
+  const styles = await readFile(new URL('../styles.css', import.meta.url), 'utf8');
+  assert.match(html, /class="profile-avatar"/);
+  assert.match(html, /Olá, Dona Maria!/);
+  assert.match(html, /shortcut-card blue/);
+  assert.match(html, /shortcut-card orange/);
+  assert.match(html, /shortcut-card purple/);
+  assert.match(html, /id="home-voice-menu"/);
+  assert.match(html, /Falar com o/);
+  assert.match(html, /home-summary-grid/);
+  assert.match(html, /appointment-summary-card/);
+  assert.match(html, /data-view="finder"/);
+  assert.match(styles, /#home-view > \.shortcut-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2/s);
+  assert.match(styles, /\.app-view \.view-heading\s*\{[^}]*linear-gradient/s);
 });
 
 test('a página apresenta avisos de demonstração e segurança', () => {
