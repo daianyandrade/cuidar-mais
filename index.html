@@ -24,9 +24,7 @@
           <a class="brand" href="#inicio" aria-label="Cuidar+, página inicial">
             <svg class="brand-mark" viewBox="0 0 62 58" aria-hidden="true">
               <path d="M31 52C17 42 4 31 4 18A14 14 0 0 1 29 9l2 3 2-3a14 14 0 0 1 25 9c0 13-13 24-27 34Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
-              <path d="M21 25c2 8 8 13 10 15 3-3 8-8 10-15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <circle cx="21" cy="18" r="4" fill="currentColor"/>
-              <circle cx="41" cy="18" r="4" fill="currentColor"/>
+              <path d="M14 29h9l4-8 7 18 5-10h9" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span class="brand-word">Cuidar<span>+</span></span>
           </a>
@@ -43,8 +41,8 @@
       <section id="inicio" class="welcome" aria-labelledby="welcome-title">
         <div class="welcome-copy">
           <p class="eyebrow">Início</p>
-          <h1 id="welcome-title">Olá, Dona Maria!</h1>
-          <p>Como podemos ajudar hoje?</p>
+          <h1 id="welcome-title">Olá!</h1>
+          <p>Como podemos ajudar?</p>
           <span class="welcome-line" aria-hidden="true"></span>
         </div>
         <div class="welcome-symbol" aria-hidden="true">
@@ -77,21 +75,21 @@
         <p id="daily-summary" class="daily-summary" aria-live="polite"><strong>Hoje:</strong> 1 lembrete programado.</p>
 
         <div class="shortcut-grid">
-          <button class="shortcut-card blue" type="button" data-view="consultations">
+          <button class="shortcut-card" type="button" data-view="consultations">
             <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><rect x="9" y="13" width="46" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="5"/><path d="M9 27h46M21 7v13M43 7v13M20 37h7M37 37h7M20 47h7M37 47h7" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>
-            <span><strong>Consultas e<br />Exames</strong><small>Veja seus compromissos</small></span>
+            <span><strong>Consultas e<br />exames</strong><small>Veja seus compromissos</small></span>
           </button>
           <button data-open-medicine-finder class="shortcut-card green" type="button">
-            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg finder-medication-icon"><path d="M47 8c-7 0-12 5-12 12 0 9 12 20 12 20s12-11 12-20c0-7-5-12-12-12Z" fill="currentColor" opacity=".28"/><circle cx="47" cy="20" r="4" fill="white"/><path d="M21 14h22v9h5v30H16V23h5v-9Z" fill="currentColor"/><path d="M25 14h14" stroke="white" stroke-width="4" stroke-linecap="round"/><path d="M32 28v17M23.5 36.5h17" stroke="white" stroke-width="5" stroke-linecap="round"/></svg></span>
+            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><g transform="rotate(-45 32 32)"><rect x="11" y="22" width="42" height="20" rx="10" fill="none" stroke="currentColor" stroke-width="5"/><path d="M32 22v20" stroke="currentColor" stroke-width="5"/></g></svg></span>
             <span><strong>Encontrar<br />Medicamentos</strong><small>Informações da rede pública</small></span>
           </button>
-          <button class="shortcut-card green" type="button" data-view="family">
-            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><circle cx="32" cy="19" r="8" fill="currentColor"/><circle cx="15" cy="25" r="7" fill="currentColor" opacity=".8"/><circle cx="49" cy="25" r="7" fill="currentColor" opacity=".8"/><path d="M18 55v-8c0-8 6-14 14-14s14 6 14 14v8M3 55v-6c0-7 5-12 12-12 2 0 4 .5 6 1.5M61 55v-6c0-7-5-12-12-12-2 0-4 .5-6 1.5" fill="currentColor"/></svg></span>
-            <span><strong>Minha<br />Família</strong><small>Acompanhe com seus familiares</small></span>
+          <button class="shortcut-card green" type="button" data-view="consultations">
+            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><rect x="13" y="12" width="38" height="43" rx="5" fill="none" stroke="currentColor" stroke-width="5"/><rect x="24" y="7" width="16" height="10" rx="3" fill="white" stroke="currentColor" stroke-width="5"/><path d="M22 30l4 4 7-8M22 43l4 4 7-8M38 30h6M38 43h6" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span><strong>Minha<br />agenda</strong><small>Organize compromissos</small></span>
           </button>
-          <button class="shortcut-card green" type="button" data-demo-action="Configurar lembretes">
-            <span class="shortcut-icon" aria-hidden="true">☎</span>
-            <span><strong>Receber<br />Lembretes</strong><small>Por aplicativo, voz ou ligação</small></span>
+          <button data-open-medicine-finder class="shortcut-card green" type="button">
+            <span class="shortcut-icon" aria-hidden="true"><svg viewBox="0 0 64 64" class="shortcut-svg"><path d="M32 57s18-17 18-31a18 18 0 1 0-36 0c0 14 18 31 18 31Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><circle cx="32" cy="26" r="6" fill="currentColor"/></svg></span>
+            <span><strong>Unidades<br />de saúde</strong><small>Veja no mapa</small></span>
           </button>
         </div>
 
@@ -358,10 +356,10 @@
       </section>
 
       <nav class="bottom-nav" aria-label="Navegação principal">
-        <button class="active" type="button" data-view="home" aria-current="page"><span aria-hidden="true">⌂</span>Início</button>
-        <button type="button" data-view="medications"><span aria-hidden="true"><img class="nav-capsule-image" src="/icons/capsule-realistic.png" alt="" /></span>Medicamentos</button>
+        <button class="active" type="button" data-view="home" aria-current="page"><span aria-hidden="true"><svg viewBox="0 0 64 64" class="nav-svg"><path d="M8 30 32 10l24 20v24H38V39H26v15H8Z" fill="currentColor"/></svg></span>Início</button>
+        <button type="button" data-view="medications"><span aria-hidden="true"><svg viewBox="0 0 64 64" class="nav-svg"><g transform="rotate(-45 32 32)"><rect x="11" y="22" width="42" height="20" rx="10" fill="none" stroke="currentColor" stroke-width="5"/><path d="M32 22v20" stroke="currentColor" stroke-width="5"/></g></svg></span>Medicamentos</button>
         <button type="button" data-view="consultations"><span aria-hidden="true"><svg viewBox="0 0 64 64" class="nav-svg"><rect x="9" y="13" width="46" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="5"/><path d="M9 27h46M21 7v13M43 7v13" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>Consultas</button>
-        <button type="button" data-view="family"><span aria-hidden="true"><svg viewBox="0 0 64 64" class="nav-svg"><circle cx="32" cy="19" r="8" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="15" cy="25" r="7" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="49" cy="25" r="7" fill="none" stroke="currentColor" stroke-width="5"/><path d="M18 55v-8c0-8 6-14 14-14s14 6 14 14v8M3 55v-6c0-7 5-12 12-12M61 55v-6c0-7-5-12-12-12" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>Família</button>
+        <button type="button" data-view="family"><span aria-hidden="true"><svg viewBox="0 0 64 64" class="nav-svg"><circle cx="32" cy="20" r="9" fill="none" stroke="currentColor" stroke-width="5"/><path d="M14 57v-7c0-10 8-17 18-17s18 7 18 17v7" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>Família</button>
       </nav>
     </main>
 
