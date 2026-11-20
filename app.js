@@ -330,10 +330,10 @@ function renderHome() {
   const medication = reminder ? getMedication(state, reminder.medicationId) : null;
   const medicineTitle = document.querySelector('#medicine-title');
   const medicineKicker = document.querySelector('#home-view .medicine-card .card-kicker');
-  medicineTitle.textContent = medication ? `${medication.name} ${medication.dosage}` : 'Sem lembretes';
+  medicineTitle.textContent = medication ? medication.name : 'Sem lembretes';
   medicineKicker.textContent = 'Próximo medicamento';
   document.querySelector('#home-reminder-details').innerHTML = medication
-    ? `${escapeHtml(medication.name)} ${escapeHtml(medication.dosage)} às <strong>${escapeHtml(reminder.time)}</strong>`
+    ? `<span class="summary-dose">${escapeHtml(medication.dosage)}</span><strong>Hoje, às ${escapeHtml(reminder.time)}</strong>`
     : 'Não há outro lembrete programado para agora.';
   document.querySelector('.focus-label').innerHTML = `<span aria-hidden="true">●</span> Próximo lembrete${reminder ? ` · ${reminderDayLabel(reminder)}` : ''}`;
   const appointment = [...(state.appointments ?? [])]
@@ -342,7 +342,9 @@ function renderHome() {
   const appointmentDetails = document.querySelector('#home-appointment-details');
   if (appointment) {
     const calendar = formatAppointmentDate(appointment.date);
-    appointmentTitle.textContent = appointment.title;
+    appointmentTitle.textContent = appointment.title
+      .replace(/^Consulta\s+com\s+/i, '')
+      .replace(/^Exame\s+de\s+/i, '');
     appointmentDetails.textContent = `${calendar.day} ${calendar.month} · ${appointment.time}`;
   } else {
     appointmentTitle.textContent = 'Sem consulta marcada';
