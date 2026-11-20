@@ -3,6 +3,8 @@ import { DEMO_STORAGE_KEY, acknowledgeReminderUnderstanding, addAppointment, add
 const fontToggle = document.querySelector('[data-font-toggle]');
 const toast = document.querySelector('.toast');
 const installButton = document.querySelector('#install-app');
+const voiceMenuButton = document.querySelector('#voice-menu-toggle');
+const voiceMenuStatus = document.querySelector('#voice-menu-status');
 const homeView = document.querySelector('#home-view');
 const medicationsView = document.querySelector('#medications-view');
 const finderView = document.querySelector('#finder-view');
@@ -38,6 +40,7 @@ let activeCallKind = null;
 let activeCallAppointmentId = null;
 let activeCallReminder = null;
 let voiceRecognition = null;
+let menuVoiceRecognition = null;
 let recognitionAttempts = 0;
 let callAnswered = false;
 let toastTimer;
@@ -99,6 +102,103 @@ function escapeHtml(value) {
 }
 function formatDateTime(value) {
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value));
+}
+
+function setVoiceMenuStatus(message = '', hidden = !message) {
+  voiceMenuStatus.textContent = message;
+  voiceMenuStatus.hidden = hidden;
+}
+
+function finishMenuVoiceRecognition() {
+  menuVoiceRecognition = null;
+  voiceMenuButton.classList.remove('listening');
+  voiceMenuButton.setAttribute('aria-pressed', 'false');
+  voiceMenuButton.setAttribute('aria-label', 'Usar comando de voz no menu');
+}
+
+function stopMenuVoiceRecognition(message = '') {
+  if (menuVoiceRecognition) {
+    const recognition = menuVoiceRecognition;
+    menuVoiceRecognition = null;
+    recognition.onresult = null;
+    recognition.onerror = null;
+    recognition.onend = null;
+    try { recognition.abort(); } catch { /* A escuta já pode ter terminado. */ }
+  }
+  finishMenuVoiceRecognition();
+  if (message) setVoiceMenuStatus(message, false);
+}
+
+function menuDestinationFor(transcript) {
+  const command = String(transcript).toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[.,!?]/g, '').trim();
+  if (/\b(encontrar|buscar)\b.*\b(medicamento|medicamentos|remedio|remedios)\b/.test(command) || /\b(unidade|unidades)\b/.test(command)) return 'finder';
+  if (/\b(medicamento|medicamentos|remedio|remedios)\b/.test(command)) return 'medications';
+  if (/\b(consulta|consultas|agenda|exame|exames)\b/.test(command)) return 'consultations';
+  if (/\b(familia|familiar|familiares)\b/.test(command)) return 'family';
+  if (/\b(inicio|casa|principal)\b/.test(command)) return 'home';
+  return null;
+}
+
+function openVoiceMenuDestination(destination) {
+  const labels = { home: 'Início', medications: 'Medicamentos', finder: 'Encontrar medicamentos', consultations: 'Consultas', family: 'Família' };
+  if (destination === 'finder') {
+    showView('finder');
+    finderSearchButton.focus({ preventScroll: true });
+  } else {
+    showView(destination);
+  }
+  setVoiceMenuStatus(`Abrindo ${labels[destination]}.`, false);
+}
+
+function startMenuVoiceRecognition() {
+  if (!callSimulation.hidden) {
+    setVoiceMenuStatus('Encerre a ligação simulada antes de usar o menu por voz.', false);
+    return;
+  }
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    setVoiceMenuStatus('Comando de voz não disponível. Use os botões do menu.', false);
+    return;
+  }
+  const recognition = new Recognition();
+  menuVoiceRecognition = recognition;
+  recognition.lang = 'pt-BR';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  voiceMenuButton.classList.add('listening');
+  voiceMenuButton.setAttribute('aria-pressed', 'true');
+  voiceMenuButton.setAttribute('aria-label', 'Parar comando de voz no menu');
+  setVoiceMenuStatus('Ouvindo: diga “Início”, “Medicamentos”, “Consultas”, “Família” ou “Encontrar medicamentos”.', false);
+  let settled = false;
+  recognition.onresult = (event) => {
+    settled = true;
+    const destination = menuDestinationFor(event.results?.[0]?.[0]?.transcript || '');
+    finishMenuVoiceRecognition();
+    if (destination) openVoiceMenuDestination(destination);
+    else setVoiceMenuStatus('Não entendi. Diga “Início”, “Medicamentos”, “Consultas”, “Família” ou “Encontrar medicamentos”.', false);
+  };
+  recognition.onerror = (event) => {
+    if (settled) return;
+    settled = true;
+    finishMenuVoiceRecognition();
+    const message = event.error === 'not-allowed' || event.error === 'service-not-allowed'
+      ? 'Microfone não autorizado. Use os botões do menu.'
+      : 'Não foi possível ouvir. Toque no microfone para tentar novamente.';
+    setVoiceMenuStatus(message, false);
+  };
+  recognition.onend = () => {
+    if (!settled && menuVoiceRecognition === recognition) {
+      finishMenuVoiceRecognition();
+      setVoiceMenuStatus('Não foi possível ouvir. Toque no microfone para tentar novamente.', false);
+    }
+  };
+  try {
+    recognition.start();
+  } catch {
+    finishMenuVoiceRecognition();
+    setVoiceMenuStatus('Comando de voz não disponível. Use os botões do menu.', false);
+  }
 }
 
 function getActualInterval() {
@@ -877,6 +977,13 @@ fontToggle.addEventListener('click', () => {
   fontToggle.setAttribute('aria-pressed', String(enabled));
   fontToggle.setAttribute('aria-label', enabled ? 'Voltar ao tamanho padrão do texto' : 'Aumentar tamanho do texto');
   showToast(enabled ? 'Texto aumentado.' : 'Texto no tamanho padrão.');
+});
+voiceMenuButton.addEventListener('click', () => {
+  if (menuVoiceRecognition) {
+    stopMenuVoiceRecognition('Comando de voz interrompido. Use os botões do menu quando quiser.');
+    return;
+  }
+  startMenuVoiceRecognition();
 });
 document.querySelector('[data-read-page]').addEventListener('click', () => medicationsView.hidden ? speakReminder() : showToast('Use “Ouvir novamente” na tela inicial para reproduzir o lembrete.'));
 document.querySelectorAll('[data-view]').forEach((element) => element.addEventListener('click', () => showView(element.dataset.view)));

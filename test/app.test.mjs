@@ -23,6 +23,18 @@ test('os recursos básicos de acessibilidade possuem controles', () => {
   assert.match(script, /speechSynthesis/);
 });
 
+test('o menu oferece comando de voz com retorno visual e mantém a navegação por botões', () => {
+  assert.match(html, /id="voice-menu-toggle"/);
+  assert.match(html, /id="voice-menu-status"/);
+  assert.match(script, /function menuDestinationFor/);
+  assert.match(script, /window\.SpeechRecognition \|\| window\.webkitSpeechRecognition/);
+  assert.match(script, /recognition\.continuous = false/);
+  assert.match(script, /Ouvindo: diga “Início”, “Medicamentos”, “Consultas”, “Família” ou “Encontrar medicamentos”/);
+  assert.match(script, /Microfone não autorizado\. Use os botões do menu/);
+  assert.match(script, /showView\(destination\)/);
+  assert.match(html, /data-view="medications"/);
+});
+
 test('o aplicativo oferece a estrutura necessária para instalação web', async () => {
   const manifest = await readFile(new URL('../manifest.webmanifest', import.meta.url), 'utf8');
   const serviceWorker = await readFile(new URL('../sw.js', import.meta.url), 'utf8');

@@ -65,6 +65,10 @@ Na opção **Simular ligação de lembrete**, o Cuidar+ lê o lembrete e pergunt
 
 O cartão inicial usa o relógio do aparelho para mostrar o próximo horário programado. Quando a pessoa compreende o lembrete na ligação simulada (ou confirma pelo botão), o horário correspondente é marcado somente como compreendido e o cartão passa ao próximo lembrete.
 
+## Comando de voz no menu
+
+O botão **Usar comando de voz** permite navegar dizendo “Início”, “Medicamentos”, “Consultas” ou “Família”. O navegador mostra por escrito quando está ouvindo e qual tela foi aberta; os botões normais do menu continuam disponíveis. O microfone é usado apenas para um comando curto e depende da permissão do navegador.
+
 Não há telefonia real, ligação para celular nem transmissão de áudio nesta etapa. A separação dos eventos no estado local permite que uma futura integração de telefonia registre os mesmos eventos, mediante autorização e infraestrutura apropriada.
 
 ## Incluído nesta etapa
