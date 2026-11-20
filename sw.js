@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cuidar-plus-v28';
+const CACHE_NAME = 'cuidar-plus-v29';
 const APP_SHELL = [
   '/',
   '/index.html',

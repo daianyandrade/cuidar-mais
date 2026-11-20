@@ -82,34 +82,34 @@ h1 { margin: 0; font-size: clamp(1.62rem, 6.8vw, 2.12rem); letter-spacing: -.05e
 .help-card small { display: block; margin-top: 2px; color: #273f5b; font-size: .91rem; font-weight: 600; }
 .help-arrow { font-size: 3rem; font-weight: 300; }
 .home-summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-#home-view > .home-summary-grid > .medicine-card { min-height: 164px; grid-template-columns: 1fr 26px; grid-template-rows: 63px 1fr; gap: 6px; padding: 17px 15px 13px; border: 0; border-radius: 25px; color: #173456; background: linear-gradient(135deg, #f6fff8, #c8f2d1); box-shadow: 0 4px 10px rgba(7, 80, 37, .12); }
+#home-view > .home-summary-grid > .medicine-card { min-height: 146px; grid-template-columns: 62px minmax(0, 1fr) 20px; grid-template-rows: 1fr; gap: 10px; padding: 16px 12px; border: 0; border-radius: 25px; color: #173456; background: linear-gradient(135deg, #f6fff8, #c8f2d1); box-shadow: 0 4px 10px rgba(7, 80, 37, .12); }
 #home-view > .home-summary-grid .focus-label { display: none; }
 #home-view > .home-summary-grid .medicine-icon { display: grid; width: 62px; height: 62px; place-items: center; border-radius: 19px; transform: none; background: linear-gradient(135deg, #18b84f, #06722b); }
 #home-view > .home-summary-grid .medicine-icon-image { width: 53px; height: 53px; }
-#home-view > .home-summary-grid .medicine-copy { grid-row: 2; grid-column: 1 / 3; }
+#home-view > .home-summary-grid .medicine-copy { grid-row: 1; grid-column: 2; }
 #home-view > .home-summary-grid .card-kicker { color: #087d2e; font-size: .8rem; }
-#home-view > .home-summary-grid .medicine-copy h2 { color: #08182f; font-size: 1.25rem; line-height: 1.02; }
-#home-view > .home-summary-grid .medicine-copy p { color: #283f55; font-size: .88rem; line-height: 1.2; }
-#home-view > .home-summary-grid .card-arrow { grid-column: 2; grid-row: 1; color: #0b3157; font-size: 2.8rem; }
-.appointment-summary-card { display: grid; min-height: 164px; grid-template-columns: 1fr 26px; grid-template-rows: 63px 1fr; gap: 6px; padding: 17px 15px 13px; border: 0; border-radius: 25px; color: #102b4e; text-align: left; background: linear-gradient(135deg, #f4fbff, #c4e6fb); box-shadow: 0 4px 10px rgba(4, 85, 136, .12); cursor: pointer; }
+#home-view > .home-summary-grid .medicine-copy h2 { color: #08182f; font-size: 1.11rem; line-height: 1.02; }
+#home-view > .home-summary-grid .medicine-copy p { color: #283f55; font-size: .78rem; line-height: 1.18; }
+#home-view > .home-summary-grid .card-arrow { grid-column: 3; grid-row: 1; color: #0b3157; font-size: 2.45rem; }
+.appointment-summary-card { display: grid; min-height: 146px; grid-template-columns: 62px minmax(0, 1fr) 20px; grid-template-rows: 1fr; gap: 10px; padding: 16px 12px; border: 0; border-radius: 25px; color: #102b4e; text-align: left; background: linear-gradient(135deg, #f4fbff, #c4e6fb); box-shadow: 0 4px 10px rgba(4, 85, 136, .12); cursor: pointer; }
 .summary-icon { display: grid; width: 62px; height: 62px; place-items: center; border-radius: 19px; color: white; background: linear-gradient(135deg, #129dea, #0756a0); }
 .summary-icon svg { width: 39px; height: 39px; }
-.appointment-summary-copy { display: block; grid-column: 1 / 3; grid-row: 2; }
+.appointment-summary-copy { display: block; grid-column: 2; grid-row: 1; }
 .appointment-summary-copy .card-kicker { color: #0765a8; }
 .appointment-summary-copy strong, .appointment-summary-copy > span:last-child { display: block; }
-.appointment-summary-copy strong { color: #08182f; font-size: 1.15rem; line-height: 1.05; }
-.appointment-summary-copy > span:last-child { margin-top: 7px; color: #283f55; font-size: .84rem; font-weight: 800; }
-.summary-arrow { grid-column: 2; grid-row: 1; align-self: center; color: #0b3157; font-size: 2.8rem; font-weight: 300; }
+.appointment-summary-copy strong { color: #08182f; font-size: 1.06rem; line-height: 1.05; }
+.appointment-summary-copy > span:last-child { margin-top: 6px; color: #283f55; font-size: .78rem; font-weight: 800; }
+.summary-arrow { grid-column: 3; grid-row: 1; align-self: center; color: #0b3157; font-size: 2.45rem; font-weight: 300; }
 #home-view > .shortcut-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 17px; }
 .shortcut-arrow { align-self: center; color: #183c58; font-size: 2.35rem; font-weight: 300; line-height: 1; }
-#home-view > .shortcut-grid .shortcut-card { min-height: 177px; grid-template-columns: 1fr 22px; grid-template-rows: 66px 1fr; gap: 8px; align-items: start; padding: 17px 15px 14px; border: 0; border-radius: 25px; box-shadow: 0 4px 10px rgba(7, 41, 74, .11); }
+#home-view > .shortcut-grid .shortcut-card { min-height: 151px; grid-template-columns: 62px minmax(0, 1fr) 18px; grid-template-rows: 1fr; gap: 9px; align-items: center; padding: 15px 12px; border: 0; border-radius: 25px; box-shadow: 0 4px 10px rgba(7, 41, 74, .11); }
 #home-view > .shortcut-grid .shortcut-icon { display: grid; width: 62px; height: 62px; place-items: center; border-radius: 19px; color: #087d2e; background: linear-gradient(135deg, #19b94c, #087b2c); }
 #home-view > .shortcut-grid .shortcut-card.green .shortcut-icon { color: white; }
 #home-view > .shortcut-grid .shortcut-svg { width: 42px; height: 42px; }
-#home-view > .shortcut-grid .shortcut-card > span:nth-child(2) { grid-column: 1 / 3; }
-#home-view > .shortcut-grid .shortcut-arrow { grid-column: 2; grid-row: 1; }
-#home-view > .shortcut-grid .shortcut-card strong { color: #08182f; font-size: 1.23rem; line-height: 1.02; }
-#home-view > .shortcut-grid .shortcut-card small { margin-top: 7px; color: #1f3853; font-size: .84rem; line-height: 1.16; }
+#home-view > .shortcut-grid .shortcut-card > span:nth-child(2) { grid-column: 2; grid-row: 1; }
+#home-view > .shortcut-grid .shortcut-arrow { grid-column: 3; grid-row: 1; }
+#home-view > .shortcut-grid .shortcut-card strong { color: #08182f; font-size: 1.12rem; line-height: 1.02; }
+#home-view > .shortcut-grid .shortcut-card small { margin-top: 6px; color: #1f3853; font-size: .76rem; line-height: 1.16; }
 #home-view > .shortcut-grid .shortcut-card.green { background: linear-gradient(135deg, #f6fff8, #c8f2d1); }
 #home-view > .shortcut-grid .shortcut-card.blue { background: linear-gradient(135deg, #f4fbff, #c4e6fb); }
 #home-view > .shortcut-grid .shortcut-card.blue .shortcut-icon { color: white; background: linear-gradient(135deg, #129dea, #0756a0); }
