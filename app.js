@@ -243,7 +243,7 @@ function renderMedicationList() {
 }
 
 function focusMedicineFinder() {
-  document.querySelector('#medicine-finder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelector('#medication-nearby').scrollIntoView({ behavior: 'smooth', block: 'start' });
   finderSearchButton.focus({ preventScroll: true });
   showToast('Encontre uma unidade e confirme o estoque no portal oficial.');
 }

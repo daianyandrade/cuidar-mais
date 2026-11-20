@@ -172,7 +172,7 @@ test('consultas e exames permanece centrado na agenda e a busca fica disponível
 });
 
 test('a busca de medicamentos mantém as unidades públicas no Cuidar+ e separa a consulta de estoque oficial', () => {
-  assert.match(html, /Encontrar medicamentos/);
+  assert.match(html, /Medicamentos perto de você/);
   assert.match(html, /id="finder-search"/);
   assert.match(html, /estoque-farmacias-cuiaba\.web\.app/);
   assert.match(html, /Consultar estoque oficial/);
