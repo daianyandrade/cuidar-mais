@@ -32,8 +32,8 @@ button:focus-visible, a:focus-visible { outline: 4px solid #f8cc23; outline-offs
 .brand { display: inline-flex; align-items: center; color: white; text-decoration: none; }
 .brand-mark { width: 49px; height: 45px; color: white; }
 .brand-mark path:first-child { stroke: #fff; }
-.brand-word { margin-left: .16rem; letter-spacing: -2px; font-size: 2.45rem; font-weight: 800; line-height: 1; }
-.brand-word span { color: white; }
+.brand-word { display: inline-flex; align-items: center; margin-left: .16rem; letter-spacing: -2px; font-size: 2.45rem; font-weight: 800; line-height: 1; }
+.brand-word span { display: inline-block; margin-left: .03em; color: white; line-height: 1; transform: translateY(.015em); }
 .header-controls { position: absolute; top: 1px; right: 0; z-index: 2; display: flex; gap: .45rem; }
 .icon-button { display: grid; width: 45px; height: 45px; padding: 0; place-items: center; border: 2px solid rgba(255,255,255,.92); border-radius: 12px; color: white; background: transparent; cursor: pointer; font-weight: 800; font-size: 1.35rem; }
 .icon-button svg { width: 26px; height: 26px; }
