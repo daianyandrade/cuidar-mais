@@ -1,4 +1,4 @@
-import { DEMO_STORAGE_KEY, addAppointment, addDoseSelfReport, addFamilyContact, addMedication, addSimulationCallRecord, calculateSchedule, confirmReminder, createDemoState, getMedication, getReminderCount, updateMedication } from './demo-state.js';
+import { DEMO_STORAGE_KEY, addAppointment, addFamilyContact, addMedication, addSimulationCallEvent, addSimulationCallRecord, calculateSchedule, confirmReminder, createDemoState, getMedication, getReminderCount, postponeReminder, updateMedication } from './demo-state.js';
 
 const fontToggle = document.querySelector('[data-font-toggle]');
 const toast = document.querySelector('.toast');
@@ -28,12 +28,24 @@ const familyContactMessage = document.querySelector('#family-contact-message');
 const callSimulation = document.querySelector('#call-simulation');
 const callSimulationMessage = document.querySelector('#call-simulation-message');
 const callSimulationRecipient = document.querySelector('#call-simulation-recipient');
+const callListeningStatus = document.querySelector('#call-listening-status');
+const callPostponeControls = document.querySelector('#call-postpone-controls');
+const callPostponeTime = document.querySelector('#call-postpone-time');
+const answerSimulatedCallButton = document.querySelector('#answer-simulated-call');
+const callConfirmReceiptButton = document.querySelector('#call-confirm-receipt');
+const repeatCallMessageButton = document.querySelector('#repeat-call-message');
+const showPostponeOptionsButton = document.querySelector('#show-postpone-options');
+const postponeCallReminderButton = document.querySelector('#postpone-call-reminder');
 const finderSearchButton = document.querySelector('#finder-search');
 const finderStatus = document.querySelector('#finder-status');
 const finderResults = document.querySelector('#finder-results');
 const finderMapRegion = document.querySelector('#finder-map-region');
 let activeCallKind = null;
-let repeatCallMessage = false;
+let voiceRecognition = null;
+let recognitionAttempts = 0;
+let callRepeatCount = 0;
+let callAnswered = false;
+let callReceiptConfirmed = false;
 let toastTimer;
 let deferredInstallPrompt;
 let state = loadState();
@@ -45,6 +57,8 @@ let finderMap = null;
 let finderMarkers = new Map();
 let finderPayload = null;
 const FINDER_RADIUS_KM = 10;
+const MAX_VOICE_RECOGNITION_ATTEMPTS = 2;
+const MAX_CALL_MESSAGE_REPEATS = 2;
 const demonstrationServices = [
   { specialty: 'geriatria', type: 'SUS', name: 'Atendimento em geriatria — exemplo', description: 'Exemplo de local que pode oferecer cuidado à pessoa idosa. Confirme a necessidade de encaminhamento e a disponibilidade.' },
   { specialty: 'exames', type: 'Particular', name: 'Laboratório — exemplo', description: 'Exemplo de local para realização de exames. Confirme preparo, valores e disponibilidade diretamente com a unidade.' },
@@ -472,6 +486,34 @@ function renderHistory() {
   }).join('');
 }
 
+function callEventLabel(entry) {
+  const labels = {
+    'reminder-sent': 'Lembrete enviado',
+    'call-answered': 'Chamada atendida',
+    'receipt-confirmed': 'Recebimento confirmado',
+    'reminder-postponed': 'Lembrete adiado',
+    'no-response': 'Sem resposta válida',
+    'call-ended': 'Chamada encerrada'
+  };
+  return labels[entry.event] || labels[entry.outcome] || 'Ligação demonstrativa registrada';
+}
+
+function renderCallHistory() {
+  const history = document.querySelector('#call-history');
+  const entries = state.callHistory ?? [];
+  if (!entries.length) {
+    history.innerHTML = '<p class="empty-state">Nenhuma ligação demonstrativa registrada neste aparelho.</p>';
+    return;
+  }
+  history.innerHTML = entries.map((entry) => {
+    const medication = entry.medicationId ? getMedication(state, entry.medicationId) : null;
+    const detail = entry.scheduledFor
+      ? `Novo horário: ${escapeHtml(entry.scheduledFor)}.`
+      : medication ? escapeHtml(medication.name) : 'Simulação do Cuidar+';
+    return `<article class="history-item"><strong>${escapeHtml(callEventLabel(entry))}</strong><span>${detail} · ${escapeHtml(formatDateTime(entry.createdAt))} · simulação</span></article>`;
+  }).join('');
+}
+
 function formatAppointmentDate(date) {
   const [year, month, day] = String(date).split('-');
   return { day, month: new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(new Date(Number(year), Number(month) - 1, Number(day))).replace('.', '').toUpperCase() };
@@ -526,7 +568,7 @@ function renderFamily() {
   document.querySelector('#family-contact-list').innerHTML = contacts.length ? contacts.map((contact) => `<article class="family-contact-card"><span aria-hidden="true">●</span><div><strong>${escapeHtml(contact.name)}</strong><p>${escapeHtml(contact.relationship)} · ${escapeHtml(contact.phone)}</p></div><small>Autorizado<br />· demonstração</small></article>`).join('') : '<p class="empty-state">Nenhum familiar demonstrativo vinculado.</p>';
 }
 
-function render() { renderHome(); renderMedicationList(); renderHistory(); renderAppointments(); renderFamily(); }
+function render() { renderHome(); renderMedicationList(); renderHistory(); renderCallHistory(); renderAppointments(); renderFamily(); }
 function showView(view) {
   const finder = view === 'finder';
   const medications = view === 'medications';
@@ -573,34 +615,198 @@ function callMessageFor(kind) {
   if (kind === 'ubs') return 'Ligação simulada para a UBS. Nenhuma unidade real foi contatada.';
   if (kind === 'acs') return 'Ligação simulada para o agente comunitário de saúde. Nenhuma pessoa real foi contatada.';
   const medication = getMedication(state, state.reminder.medicationId);
-  return medication ? `Olá, Maria. Este é um lembrete do Cuidar Mais. Está na hora do medicamento ${medication.name}, cadastrado para as ${state.reminder.time}.` : 'Olá, Maria. Este é um lembrete demonstrativo do Cuidar Mais.';
+  return medication
+    ? `Olá, Maria. Esta é uma simulação do Cuidar Mais. Você recebeu o lembrete de ${medication.name}, cadastrado para as ${state.reminder.time}? Diga recebi, ouvi, sim, pode repetir ou depois. Confirmar o recebimento não confirma que o medicamento foi tomado.`
+    : 'Olá, Maria. Esta é uma simulação de lembrete do Cuidar Mais. Diga recebi, ouvi, sim, pode repetir ou depois.';
 }
 
-function speakCallMessage() {
-  const message = callMessageFor(activeCallKind);
+function setCallListeningStatus(message = '', hidden = !message) {
+  callListeningStatus.textContent = message;
+  callListeningStatus.hidden = hidden;
+}
+
+function stopVoiceRecognition() {
+  if (voiceRecognition) {
+    const currentRecognition = voiceRecognition;
+    voiceRecognition = null;
+    currentRecognition.onresult = null;
+    currentRecognition.onerror = null;
+    currentRecognition.onend = null;
+    try { currentRecognition.abort(); } catch { /* A escuta já pode ter terminado. */ }
+  }
+  setCallListeningStatus();
+}
+
+function recordCallEvent(event, extra = {}) {
+  state = addSimulationCallEvent(state, {
+    kind: activeCallKind || 'medication',
+    event,
+    medicationId: activeCallKind === 'medication' ? state.reminder.medicationId : null,
+    ...extra
+  });
+  saveState();
+  renderCallHistory();
+}
+
+function speakCallText(message, onend) {
   callSimulationMessage.textContent = message;
-  if (!('speechSynthesis' in window)) return;
+  if (!('speechSynthesis' in window)) {
+    onend?.();
+    return false;
+  }
   window.speechSynthesis.cancel();
   const speech = new SpeechSynthesisUtterance(message);
   speech.lang = 'pt-BR';
+  speech.rate = 0.92;
   speech.onend = () => {
-    if (repeatCallMessage && !callSimulation.hidden && activeCallKind === 'medication') {
-      window.setTimeout(speakCallMessage, 600);
-    }
+    if (!callSimulation.hidden) onend?.();
+  };
+  speech.onerror = () => {
+    if (!callSimulation.hidden) onend?.();
   };
   window.speechSynthesis.speak(speech);
+  return true;
+}
+
+function speakCallMessage(listenAfter = false) {
+  const message = callMessageFor(activeCallKind);
+  const spoken = speakCallText(message, () => {
+    if (listenAfter && activeCallKind === 'medication' && callAnswered && !callReceiptConfirmed) startVoiceRecognition();
+  });
+  if (!spoken && listenAfter) {
+    setCallListeningStatus('A leitura em voz não está disponível. Use os botões abaixo para responder.', false);
+  }
+}
+
+function retryVoiceRecognition() {
+  recognitionAttempts += 1;
+  if (recognitionAttempts >= MAX_VOICE_RECOGNITION_ATTEMPTS) {
+    recordCallEvent('no-response');
+    setCallListeningStatus('Não reconhecemos uma resposta válida. A simulação será encerrada sem confirmação.', false);
+    window.setTimeout(() => closeCallSimulation('call-ended', { alreadyRecorded: false }), 1600);
+    return;
+  }
+  setCallListeningStatus('Não entendi. Vamos ouvir mais uma vez.', false);
+  speakCallText('Não entendi. Diga recebi, ouvi, sim, pode repetir ou depois.', startVoiceRecognition);
+}
+
+function showPostponeOptions() {
+  stopVoiceRecognition();
+  callPostponeControls.hidden = false;
+  callPostponeTime.value = state.reminder.time || '';
+  callSimulationMessage.textContent = 'Escolha o novo horário e toque em “Adiar lembrete”.';
+  setCallListeningStatus('A escolha do horário é feita pelos controles da tela.', false);
+  callPostponeTime.focus();
+}
+
+function confirmCallReceipt() {
+  if (callReceiptConfirmed || activeCallKind !== 'medication') return;
+  stopVoiceRecognition();
+  callReceiptConfirmed = true;
+  state = confirmReminder(state);
+  recordCallEvent('receipt-confirmed');
+  render();
+  callConfirmReceiptButton.hidden = true;
+  repeatCallMessageButton.hidden = true;
+  showPostponeOptionsButton.hidden = true;
+  callPostponeControls.hidden = true;
+  setCallListeningStatus('Recebimento confirmado. Isso não informa que o medicamento foi tomado.', false);
+  speakCallText('Recebimento confirmado. Isso não informa que o medicamento foi tomado. Você pode encerrar a simulação quando quiser.');
+}
+
+function handleVoiceResponse(transcript) {
+  const response = String(transcript).toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  if (/^(recebi|ouvi|sim)$/.test(response)) {
+    confirmCallReceipt();
+    return;
+  }
+  if (/\b(pode repetir|repete|repita)\b/.test(response)) {
+    if (callRepeatCount >= MAX_CALL_MESSAGE_REPEATS) {
+      setCallListeningStatus('O limite de repetições desta simulação foi alcançado. Use os botões ou encerre a chamada.', false);
+      return;
+    }
+    callRepeatCount += 1;
+    setCallListeningStatus(`Repetindo a mensagem (${callRepeatCount} de ${MAX_CALL_MESSAGE_REPEATS}).`, false);
+    speakCallMessage(true);
+    return;
+  }
+  if (/\b(depois|mais tarde)\b/.test(response)) {
+    speakCallText('Sem problema. Escolha o novo horário na tela e toque em adiar lembrete.', showPostponeOptions);
+    return;
+  }
+  if (/\b(nao entendi)\b/.test(response)) {
+    retryVoiceRecognition();
+    return;
+  }
+  retryVoiceRecognition();
+}
+
+function startVoiceRecognition() {
+  if (callSimulation.hidden || activeCallKind !== 'medication' || callReceiptConfirmed) return;
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    setCallListeningStatus('Este navegador não oferece resposta por voz. Use os botões abaixo.', false);
+    return;
+  }
+  stopVoiceRecognition();
+  const recognition = new Recognition();
+  voiceRecognition = recognition;
+  recognition.lang = 'pt-BR';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  let settled = false;
+  setCallListeningStatus('Ouvindo sua resposta… Diga “recebi”, “ouvi”, “sim”, “pode repetir” ou “depois”.', false);
+  recognition.onresult = (event) => {
+    settled = true;
+    const transcript = event.results?.[0]?.[0]?.transcript || '';
+    voiceRecognition = null;
+    setCallListeningStatus();
+    handleVoiceResponse(transcript);
+  };
+  recognition.onerror = (event) => {
+    if (settled) return;
+    settled = true;
+    voiceRecognition = null;
+    if (event.error === 'no-speech') {
+      retryVoiceRecognition();
+      return;
+    }
+    const message = event.error === 'not-allowed' || event.error === 'service-not-allowed'
+      ? 'Microfone não autorizado. Use os botões abaixo.'
+      : 'Não foi possível ouvir agora. Use os botões abaixo ou encerre a simulação.';
+    setCallListeningStatus(message, false);
+  };
+  recognition.onend = () => {
+    if (!settled && voiceRecognition === recognition) {
+      voiceRecognition = null;
+      retryVoiceRecognition();
+    }
+  };
+  try {
+    recognition.start();
+  } catch {
+    voiceRecognition = null;
+    setCallListeningStatus('Não foi possível ativar o microfone. Use os botões abaixo.', false);
+  }
 }
 
 function openCallSimulation(kind = 'medication') {
   activeCallKind = kind;
-  repeatCallMessage = false;
-  const answer = document.querySelector('#answer-simulated-call');
-  const confirm = document.querySelector('#call-confirm-receipt');
-  answer.hidden = kind === 'ubs' || kind === 'acs';
-  confirm.hidden = kind === 'ubs' || kind === 'acs';
-  callSimulationRecipient.textContent = kind === 'ubs' ? 'Chamando UBS — simulação' : kind === 'acs' ? 'Chamando ACS — simulação' : 'Chamada para Maria';
-  callSimulationMessage.textContent = kind === 'ubs' || kind === 'acs' ? 'Chamando…' : 'Ligação recebida.';
+  recognitionAttempts = 0;
+  callRepeatCount = 0;
+  callAnswered = false;
+  callReceiptConfirmed = false;
+  callPostponeControls.hidden = true;
+  setCallListeningStatus();
+  answerSimulatedCallButton.hidden = kind === 'ubs' || kind === 'acs';
+  callConfirmReceiptButton.hidden = true;
+  repeatCallMessageButton.hidden = true;
+  showPostponeOptionsButton.hidden = true;
+  callSimulationRecipient.textContent = kind === 'ubs' ? 'Chamando UBS — simulação' : kind === 'acs' ? 'Chamando ACS — simulação' : 'Chamada para Maria — simulação';
+  callSimulationMessage.textContent = kind === 'ubs' || kind === 'acs' ? 'Chamando…' : 'Ligação recebida. Toque em “Atender” para ouvir o lembrete.';
   callSimulation.hidden = false;
+  if (kind === 'medication') recordCallEvent('reminder-sent');
   if (kind === 'ubs' || kind === 'acs') {
     window.setTimeout(() => {
       if (!callSimulation.hidden && activeCallKind === kind) callSimulationMessage.textContent = 'Ligação simulada em andamento. Nenhuma chamada real foi feita.';
@@ -608,11 +814,17 @@ function openCallSimulation(kind = 'medication') {
   }
 }
 
-function closeCallSimulation(outcome = 'ended') {
+function closeCallSimulation(outcome = 'call-ended', { alreadyRecorded = false } = {}) {
   if (!activeCallKind) return;
-  repeatCallMessage = false;
-  state = addSimulationCallRecord(state, { kind: activeCallKind, outcome });
-  saveState();
+  stopVoiceRecognition();
+  if (!alreadyRecorded) {
+    if (activeCallKind === 'medication') recordCallEvent(outcome);
+    else {
+      state = addSimulationCallRecord(state, { kind: activeCallKind, outcome });
+      saveState();
+      renderCallHistory();
+    }
+  }
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   callSimulation.hidden = true;
   activeCallKind = null;
@@ -702,20 +914,47 @@ document.querySelectorAll('[data-open-medicine-finder]').forEach((button) => but
 finderSearchButton.addEventListener('click', findNearbyUnits);
 document.querySelector('#repeat-reminder').addEventListener('click', speakReminder);
 document.querySelector('#simulate-reminder-call').addEventListener('click', () => openCallSimulation('medication'));
-document.querySelector('#answer-simulated-call').addEventListener('click', () => {
-  repeatCallMessage = true;
-  speakCallMessage();
+answerSimulatedCallButton.addEventListener('click', () => {
+  if (activeCallKind !== 'medication') return;
+  callAnswered = true;
+  recognitionAttempts = 0;
+  answerSimulatedCallButton.hidden = true;
+  callConfirmReceiptButton.hidden = false;
+  repeatCallMessageButton.hidden = false;
+  showPostponeOptionsButton.hidden = false;
+  recordCallEvent('call-answered');
+  speakCallMessage(true);
 });
-document.querySelector('#call-confirm-receipt').addEventListener('click', () => {
-  repeatCallMessage = false;
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-  if (activeCallKind === 'medication') state = addDoseSelfReport(state, { medicationId: state.reminder.medicationId });
-  closeCallSimulation('self-reported-taken');
-  render();
-  showToast('Dose informada como tomada pelo usuário. Este registro não comprova a ingestão.');
+callConfirmReceiptButton.addEventListener('click', confirmCallReceipt);
+repeatCallMessageButton.addEventListener('click', () => {
+  if (callRepeatCount >= MAX_CALL_MESSAGE_REPEATS) {
+    setCallListeningStatus('O limite de repetições desta simulação foi alcançado.', false);
+    return;
+  }
+  callRepeatCount += 1;
+  stopVoiceRecognition();
+  setCallListeningStatus(`Repetindo a mensagem (${callRepeatCount} de ${MAX_CALL_MESSAGE_REPEATS}).`, false);
+  speakCallMessage(true);
+});
+showPostponeOptionsButton.addEventListener('click', showPostponeOptions);
+postponeCallReminderButton.addEventListener('click', () => {
+  try {
+    const newTime = callPostponeTime.value;
+    state = postponeReminder(state, newTime);
+    recordCallEvent('reminder-postponed', { scheduledFor: newTime });
+    render();
+    callPostponeControls.hidden = true;
+    callConfirmReceiptButton.hidden = true;
+    repeatCallMessageButton.hidden = true;
+    showPostponeOptionsButton.hidden = true;
+    setCallListeningStatus(`Lembrete adiado para ${newTime}. Isso não confirma que o medicamento foi tomado.`, false);
+    speakCallText(`Lembrete adiado para ${newTime}. Isso não confirma que o medicamento foi tomado.`);
+  } catch (error) {
+    setCallListeningStatus(error instanceof Error ? error.message : 'Escolha um novo horário para adiar o lembrete.', false);
+  }
 });
 document.querySelector('#end-simulated-call').addEventListener('click', () => {
-  closeCallSimulation('ended');
+  closeCallSimulation('call-ended');
   showToast('Ligação simulada encerrada.');
 });
 document.querySelector('#confirm-reminder').addEventListener('click', () => {

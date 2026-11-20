@@ -55,6 +55,18 @@ O portal municipal de estoque é mantido apenas como o botão externo **Consulta
 
 O mapa é criado somente após a busca, com Leaflet e blocos do OpenStreetMap, incluindo a atribuição exigida. Sem internet ou sem o mapa, a lista de unidades continua disponível quando a API puder ser consultada.
 
+## Lembrete por voz (simulação)
+
+Na opção **Simular ligação de lembrete**, o Cuidar+ usa apenas recursos do navegador: a mensagem é lida por síntese de voz e, ao terminar, o navegador pode pedir autorização para ouvir uma resposta curta. São aceitas as respostas “recebi”, “ouvi”, “sim”, “pode repetir”, “depois” e “não entendi”.
+
+- o microfone fica ativo apenas durante até duas tentativas curtas; se não houver resposta válida, a simulação é encerrada sem confirmação;
+- em navegador incompatível, com permissão negada ou sem microfone, os botões manuais continuam disponíveis;
+- “Confirmar recebimento” registra somente que o aviso foi recebido — **não** marca a dose como tomada;
+- para “depois”, a pessoa escolhe um novo horário na tela antes de adiar o lembrete;
+- o histórico local separa lembrete enviado, chamada atendida, recebimento confirmado, adiamento, sem resposta e chamada encerrada.
+
+Não há telefonia real, ligação para celular nem transmissão de áudio nesta etapa. A separação dos eventos no estado local permite que uma futura integração de telefonia registre os mesmos eventos, mediante autorização e infraestrutura apropriada.
+
 ## Incluído nesta etapa
 
 - tela inicial responsiva com a identidade verde, cartões arredondados e o nome Cuidar+;
@@ -62,6 +74,7 @@ O mapa é criado somente após a busca, com Leaflet e blocos do OpenStreetMap, i
 - atalhos visuais para consultas, medicamentos, família e lembretes;
 - botão de ajuda e aviso de que o recurso não substitui atendimento de emergência;
 - controle de ampliação do texto e leitura do resumo via recurso nativo do navegador, quando disponível;
+- ligação de lembrete simulada com síntese e reconhecimento de voz do navegador, alternativa por botões e histórico local de eventos;
 - instalação como aplicativo web, com ícone, manifesto e modo de exibição sem a barra do navegador;
 - cache offline dos arquivos básicos da tela inicial;
 - busca interna de unidades públicas reais de Cuiabá pelo CNES, com telefone, rota e mapa quando a fonte fornecer esses dados;

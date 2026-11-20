@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { addAppointment, addDoseSelfReport, addFamilyContact, addMedication, addSimulationCallRecord, calculateSchedule, confirmReminder, createDemoState, getReminderCount, updateMedication } from '../demo-state.js';
+import { addAppointment, addDoseSelfReport, addFamilyContact, addMedication, addSimulationCallEvent, addSimulationCallRecord, calculateSchedule, confirmReminder, createDemoState, getReminderCount, postponeReminder, updateMedication } from '../demo-state.js';
 import { fetchCuiabaPublicHealthUnits, normalizeCnesUnit } from '../api/cuiaba-units.js';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
@@ -158,7 +158,7 @@ test('a ligação da Mostra é uma simulação registrada sem afirmar chamada re
   assert.equal(state.callHistory[0].outcome, 'received');
   assert.match(html, /Cuidar\+ — Simulação/);
   assert.match(html, />Atender</);
-  assert.match(html, />Informar que tomou</);
+  assert.match(html, />Confirmar recebimento</);
   assert.match(html, />Encerrar</);
   assert.match(html, /Nenhuma chamada real será feita/);
 });
@@ -169,11 +169,36 @@ test('informar que tomou é separado do recebimento do lembrete', () => {
   assert.equal(state.doseHistory[0].verified, false);
 });
 
-test('o modal da ligação fecha ao confirmar ou encerrar', async () => {
+test('o modal da ligação fecha sem registrar dose como tomada', async () => {
   const styles = await readFile(new URL('../styles.css', import.meta.url), 'utf8');
   assert.match(styles, /\.call-simulation\[hidden\]\s*\{\s*display:\s*none/);
-  assert.match(script, /closeCallSimulation\('self-reported-taken'\)/);
-  assert.match(script, /closeCallSimulation\('ended'\)/);
+  assert.match(script, /closeCallSimulation\('call-ended'\)/);
+  assert.doesNotMatch(script, /callConfirmReceiptButton\.addEventListener\('click',[\s\S]{0,250}addDoseSelfReport/);
+});
+
+test('a ligação demonstrativa registra eventos separados e pode adiar o lembrete', () => {
+  let state = createDemoState();
+  state = addSimulationCallEvent(state, { kind: 'medication', event: 'reminder-sent', medicationId: 'med-sinvastatina', createdAt: '2026-11-18T08:00:00.000Z' });
+  state = addSimulationCallEvent(state, { kind: 'medication', event: 'call-answered', medicationId: 'med-sinvastatina', createdAt: '2026-11-18T08:01:00.000Z' });
+  state = postponeReminder(state, '22:30', '2026-11-18T08:02:00.000Z');
+  state = addSimulationCallEvent(state, { kind: 'medication', event: 'reminder-postponed', medicationId: 'med-sinvastatina', scheduledFor: '22:30', createdAt: '2026-11-18T08:02:00.000Z' });
+  assert.equal(state.reminder.time, '22:30');
+  assert.equal(state.reminder.status, 'pending');
+  assert.equal(state.callHistory[0].event, 'reminder-postponed');
+  assert.equal(state.callHistory[0].scheduledFor, '22:30');
+  assert.equal(state.doseHistory.length, 0);
+});
+
+test('a simulação usa voz do navegador com escuta limitada e alternativa manual', () => {
+  assert.match(script, /window\.SpeechRecognition \|\| window\.webkitSpeechRecognition/);
+  assert.match(script, /MAX_VOICE_RECOGNITION_ATTEMPTS = 2/);
+  assert.match(script, /MAX_CALL_MESSAGE_REPEATS = 2/);
+  assert.match(script, /Ouvindo sua resposta/);
+  assert.match(script, /not-allowed/);
+  assert.match(html, /id="call-postpone-time"/);
+  assert.match(html, /id="repeat-call-message"/);
+  assert.match(html, /id="call-listening-status"/);
+  assert.match(html, /Histórico de ligações demonstrativas/);
 });
 
 test('consultas e exames permanece centrado na agenda e a busca fica disponível na família', () => {

@@ -137,11 +137,21 @@ export function addFamilyContact(state, values, id = `family-${Date.now()}`) {
 }
 
 export function addSimulationCallRecord(state, values, id = `call-${Date.now()}`) {
+  return addSimulationCallEvent(state, {
+    ...values,
+    event: values.event ?? values.outcome ?? 'call-ended'
+  }, id);
+}
+
+export function addSimulationCallEvent(state, values, id = `call-${Date.now()}`) {
   const nextState = clone(state);
   nextState.callHistory = [{
     id,
     kind: String(values.kind ?? 'medication'),
-    outcome: String(values.outcome ?? 'ended'),
+    event: String(values.event ?? values.outcome ?? 'call-ended'),
+    outcome: String(values.outcome ?? values.event ?? 'call-ended'),
+    medicationId: values.medicationId ? String(values.medicationId) : null,
+    scheduledFor: values.scheduledFor ? String(values.scheduledFor) : null,
     createdAt: values.createdAt ?? new Date().toISOString(),
     demonstration: true
   }, ...(nextState.callHistory ?? [])];
@@ -166,5 +176,18 @@ export function confirmReminder(state, confirmedAt = new Date().toISOString()) {
     id: `history-${confirmedAt}`, medicationId: nextState.reminder.medicationId,
     scheduledTime: nextState.reminder.time, status: 'confirmed', confirmedAt
   });
+  return nextState;
+}
+
+export function postponeReminder(state, time, postponedAt = new Date().toISOString()) {
+  const scheduledTime = String(time ?? '');
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(scheduledTime)) {
+    throw new Error('Escolha um novo hor\u00e1rio para adiar o lembrete.');
+  }
+  const nextState = clone(state);
+  nextState.reminder.time = scheduledTime;
+  nextState.reminder.status = 'pending';
+  nextState.reminder.confirmedAt = null;
+  nextState.reminder.postponedAt = postponedAt;
   return nextState;
 }
