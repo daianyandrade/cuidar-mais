@@ -1,4 +1,4 @@
-export const DEMO_STORAGE_KEY = 'cuidar-mais-demo-state-v1';
+export const DEMO_STORAGE_KEY = 'cuidar-mais-profile-state-v2';
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -6,12 +6,24 @@ function clone(value) {
 
 export function createDemoState() {
   return {
-    medications: [{
-      id: 'med-losartana-demo', name: 'Losartana', dosage: '50 mg', times: ['08:00'],
-      startDate: '', endDate: '',
-      notes: 'Medicamento demonstrativo — não representa uma orientação de uso.', active: true
-    }],
-    reminder: { medicationId: 'med-losartana-demo', time: '08:00', status: 'pending', confirmedAt: null },
+    medications: [
+      {
+        id: 'med-sinvastatina', name: 'Sinvastatina', dosage: '10 mg', times: ['21:00'],
+        startDate: '', endDate: '', frequency: '1', intervalHours: '', firstTime: '21:00', firstDoseStatus: 'reported-now',
+        notes: 'Horário informado para este protótipo.', active: true
+      },
+      {
+        id: 'med-gestinol', name: 'Gestinol', dosage: '30 mcg', times: ['21:00'],
+        startDate: '', endDate: '', frequency: '1', intervalHours: '', firstTime: '21:00', firstDoseStatus: 'reported-now',
+        notes: 'Horário informado para este protótipo.', active: true
+      },
+      {
+        id: 'med-tylenol-sinus', name: 'Tylenol Sinus', dosage: 'Dose não informada', times: ['06:00', '14:00', '22:00'],
+        startDate: '', endDate: '', frequency: '3', intervalHours: '8', firstTime: '06:00', firstDoseStatus: 'reported-now',
+        notes: 'Horários simulados para o protótipo; confira a orientação recebida antes de usar.', active: true
+      }
+    ],
+    reminder: { medicationId: 'med-sinvastatina', time: '21:00', status: 'pending', confirmedAt: null },
     history: [],
     appointments: [
       {

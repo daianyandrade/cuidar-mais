@@ -74,7 +74,18 @@ test('o medicamento demonstrativo pode ser cadastrado com horários', () => {
   }, 'med-vitamina-demo');
   assert.equal(state.medications[0].name, 'Vitamina D');
   assert.deepEqual(state.medications[0].times, ['08:00', '18:00']);
-  assert.equal(getReminderCount(state), 3);
+  assert.equal(getReminderCount(state), 7);
+});
+
+test('o perfil inicial registra os horários autorizados e identifica o horário simulado', () => {
+  const state = createDemoState();
+  const sinvastatina = state.medications.find((medication) => medication.id === 'med-sinvastatina');
+  const gestinol = state.medications.find((medication) => medication.id === 'med-gestinol');
+  const tylenol = state.medications.find((medication) => medication.id === 'med-tylenol-sinus');
+  assert.deepEqual(sinvastatina.times, ['21:00']);
+  assert.deepEqual(gestinol.times, ['21:00']);
+  assert.deepEqual(tylenol.times, ['06:00', '14:00', '22:00']);
+  assert.match(tylenol.notes, /simulados/i);
 });
 
 test('o cadastro pode aguardar a primeira dose sem registrar um horário inventado', () => {
@@ -92,12 +103,12 @@ test('a programação automática calcula horários a partir do primeiro horári
 
 test('a edição permite atualizar a programação sem alterar a dosagem por sugestão', () => {
   const initialState = createDemoState();
-  const state = updateMedication(initialState, 'med-losartana-demo', {
-    name: 'Losartana', dosage: '50 mg', times: ['07:00', '19:00'],
+  const state = updateMedication(initialState, 'med-sinvastatina', {
+    name: 'Sinvastatina', dosage: '10 mg', times: ['07:00', '19:00'],
     intervalHours: '12', firstTime: '07:00', frequency: '2', automaticSchedule: true
   });
   assert.deepEqual(state.medications[0].times, ['07:00', '19:00']);
-  assert.equal(state.medications[0].dosage, '50 mg');
+  assert.equal(state.medications[0].dosage, '10 mg');
 });
 
 test('a agenda demonstrativa possui consultas e exames e aceita novo compromisso', () => {
@@ -153,7 +164,7 @@ test('a ligação da Mostra é uma simulação registrada sem afirmar chamada re
 });
 
 test('informar que tomou é separado do recebimento do lembrete', () => {
-  const state = addDoseSelfReport(createDemoState(), { medicationId: 'med-losartana-demo', reportedAt: '2026-11-18T08:00:00.000Z' });
+  const state = addDoseSelfReport(createDemoState(), { medicationId: 'med-sinvastatina', reportedAt: '2026-11-18T08:05:00.000Z' });
   assert.equal(state.doseHistory[0].source, 'user-report');
   assert.equal(state.doseHistory[0].verified, false);
 });
