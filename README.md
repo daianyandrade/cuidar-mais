@@ -57,13 +57,13 @@ O mapa é criado somente após a busca, com Leaflet e blocos do OpenStreetMap, i
 
 ## Lembrete por voz (simulação)
 
-Na opção **Simular ligação de lembrete**, o Cuidar+ usa apenas recursos do navegador: a mensagem é lida por síntese de voz e, ao terminar, o navegador pode pedir autorização para ouvir uma resposta curta. São aceitas as respostas “recebi”, “ouvi”, “sim”, “pode repetir”, “depois” e “não entendi”.
+Na opção **Simular ligação de lembrete**, o Cuidar+ lê o lembrete e pergunta apenas: **“Você entendeu o lembrete?”**. São aceitas as respostas “sim”, “entendi” e “entendi sim”. Ao reconhecer uma delas, responde “Tudo bem. Até logo!” e encerra a simulação.
 
-- o microfone fica ativo apenas durante até duas tentativas curtas; se não houver resposta válida, a simulação é encerrada sem confirmação;
-- em navegador incompatível, com permissão negada ou sem microfone, os botões manuais continuam disponíveis;
-- “Confirmar recebimento” registra somente que o aviso foi recebido — **não** marca a dose como tomada;
-- para “depois”, a pessoa escolhe um novo horário na tela antes de adiar o lembrete;
-- o histórico local separa lembrete enviado, chamada atendida, recebimento confirmado, adiamento, sem resposta e chamada encerrada.
+- o microfone fica ativo somente para a resposta curta; se não entender, a pergunta é repetida uma vez;
+- em navegador incompatível ou com permissão negada, o botão **Encerrar** continua disponível;
+- o histórico local registra somente que o lembrete foi compreendido; isso **não** registra que o medicamento foi tomado.
+
+O cartão inicial usa o relógio do aparelho para mostrar o próximo horário programado. Quando a pessoa compreende o lembrete na ligação simulada (ou confirma pelo botão), o horário correspondente é marcado somente como compreendido e o cartão passa ao próximo lembrete.
 
 Não há telefonia real, ligação para celular nem transmissão de áudio nesta etapa. A separação dos eventos no estado local permite que uma futura integração de telefonia registre os mesmos eventos, mediante autorização e infraestrutura apropriada.
 

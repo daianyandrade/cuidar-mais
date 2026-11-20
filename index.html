@@ -196,7 +196,7 @@
 
           <section class="medication-section" aria-labelledby="call-history-title">
             <h3 id="call-history-title">Histórico de ligações demonstrativas</h3>
-            <p class="section-help">Registra a simulação do aviso. Confirmar o recebimento não informa que o medicamento foi tomado.</p>
+            <p class="section-help">Registra somente quando o lembrete foi compreendido.</p>
             <div id="call-history" class="history-list" aria-live="polite"></div>
           </section>
 
@@ -379,16 +379,8 @@
         <p id="call-simulation-recipient">Chamada para Maria</p>
         <p id="call-simulation-message" class="call-message">Ligação recebida.</p>
         <p id="call-listening-status" class="call-listening-status" role="status" aria-live="polite" hidden></p>
-        <div id="call-postpone-controls" class="call-postpone-controls" hidden>
-          <label for="call-postpone-time">Novo horário do lembrete</label>
-          <input id="call-postpone-time" type="time" />
-          <button id="postpone-call-reminder" class="secondary-action" type="button">Adiar lembrete</button>
-        </div>
         <div id="call-actions" class="call-actions">
           <button id="answer-simulated-call" class="primary-action" type="button">Atender</button>
-          <button id="call-confirm-receipt" class="secondary-action" type="button" hidden>Confirmar recebimento</button>
-          <button id="repeat-call-message" class="secondary-action" type="button" hidden>Repetir mensagem</button>
-          <button id="show-postpone-options" class="secondary-action" type="button" hidden>Adiar lembrete</button>
           <button id="end-simulated-call" class="end-call-button" type="button">Encerrar</button>
         </div>
       </div>

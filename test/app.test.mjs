@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { addAppointment, addDoseSelfReport, addFamilyContact, addMedication, addSimulationCallEvent, addSimulationCallRecord, calculateSchedule, confirmReminder, createDemoState, getReminderCount, postponeReminder, updateMedication } from '../demo-state.js';
+import { acknowledgeReminderUnderstanding, addAppointment, addDoseSelfReport, addFamilyContact, addMedication, addSimulationCallEvent, addSimulationCallRecord, calculateSchedule, confirmReminder, createDemoState, getNextScheduledReminder, getReminderCount, updateMedication } from '../demo-state.js';
 import { fetchCuiabaPublicHealthUnits, normalizeCnesUnit } from '../api/cuiaba-units.js';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
@@ -158,8 +158,8 @@ test('a ligação da Mostra é uma simulação registrada sem afirmar chamada re
   assert.equal(state.callHistory[0].outcome, 'received');
   assert.match(html, /Cuidar\+ — Simulação/);
   assert.match(html, />Atender</);
-  assert.match(html, />Confirmar recebimento</);
   assert.match(html, />Encerrar</);
+  assert.doesNotMatch(html, /id="call-confirm-receipt"/);
   assert.match(html, /Nenhuma chamada real será feita/);
 });
 
@@ -169,36 +169,60 @@ test('informar que tomou é separado do recebimento do lembrete', () => {
   assert.equal(state.doseHistory[0].verified, false);
 });
 
-test('o modal da ligação fecha sem registrar dose como tomada', async () => {
+test('a confirmação por voz não registra dose como tomada', async () => {
   const styles = await readFile(new URL('../styles.css', import.meta.url), 'utf8');
   assert.match(styles, /\.call-simulation\[hidden\]\s*\{\s*display:\s*none/);
   assert.match(script, /closeCallSimulation\('call-ended'\)/);
-  assert.doesNotMatch(script, /callConfirmReceiptButton\.addEventListener\('click',[\s\S]{0,250}addDoseSelfReport/);
+  assert.match(script, /recordCallEvent\('reminder-understood'\)/);
+  assert.doesNotMatch(script, /function confirmReminderUnderstanding\(\) \{[\s\S]{0,350}confirmReminder\(/);
 });
 
-test('a ligação demonstrativa registra eventos separados e pode adiar o lembrete', () => {
+test('a ligação demonstrativa registra apenas que o lembrete foi compreendido', () => {
   let state = createDemoState();
-  state = addSimulationCallEvent(state, { kind: 'medication', event: 'reminder-sent', medicationId: 'med-sinvastatina', createdAt: '2026-11-18T08:00:00.000Z' });
-  state = addSimulationCallEvent(state, { kind: 'medication', event: 'call-answered', medicationId: 'med-sinvastatina', createdAt: '2026-11-18T08:01:00.000Z' });
-  state = postponeReminder(state, '22:30', '2026-11-18T08:02:00.000Z');
-  state = addSimulationCallEvent(state, { kind: 'medication', event: 'reminder-postponed', medicationId: 'med-sinvastatina', scheduledFor: '22:30', createdAt: '2026-11-18T08:02:00.000Z' });
-  assert.equal(state.reminder.time, '22:30');
+  state = addSimulationCallEvent(state, { kind: 'medication', event: 'reminder-understood', medicationId: 'med-sinvastatina', createdAt: '2026-11-18T08:02:00.000Z' });
+  assert.equal(state.reminder.time, '21:00');
   assert.equal(state.reminder.status, 'pending');
-  assert.equal(state.callHistory[0].event, 'reminder-postponed');
-  assert.equal(state.callHistory[0].scheduledFor, '22:30');
+  assert.equal(state.callHistory[0].event, 'reminder-understood');
   assert.equal(state.doseHistory.length, 0);
 });
 
-test('a simulação usa voz do navegador com escuta limitada e alternativa manual', () => {
+test('o próximo lembrete acompanha o horário real e avança após ser compreendido', () => {
+  const now = new Date(2026, 10, 20, 13, 0, 0);
+  const initialState = createDemoState();
+  const first = getNextScheduledReminder(initialState, now);
+  assert.deepEqual({ medicationId: first.medicationId, time: first.time, date: first.date }, {
+    medicationId: 'med-tylenol-sinus', time: '14:00', date: '2026-11-20'
+  });
+  const state = acknowledgeReminderUnderstanding(initialState, first, '2026-11-20T13:01:00.000Z');
+  const next = getNextScheduledReminder(state, now);
+  assert.deepEqual({ medicationId: next.medicationId, time: next.time, date: next.date }, {
+    medicationId: 'med-sinvastatina', time: '21:00', date: '2026-11-20'
+  });
+  const atTheSameMinute = getNextScheduledReminder(state, new Date(2026, 10, 20, 21, 0, 30));
+  assert.deepEqual({ medicationId: atTheSameMinute.medicationId, time: atTheSameMinute.time }, {
+    medicationId: 'med-sinvastatina', time: '21:00'
+  });
+  const afterSinvastatin = acknowledgeReminderUnderstanding(state, atTheSameMinute, '2026-11-20T21:00:35.000Z');
+  assert.equal(getNextScheduledReminder(afterSinvastatin, new Date(2026, 10, 20, 21, 0, 40)).medicationId, 'med-gestinol');
+  assert.equal(state.doseHistory.length, 0);
+  assert.equal(state.reminder.status, 'pending');
+});
+
+test('a simulação faz uma pergunta curta e encerra após confirmação por voz', () => {
   assert.match(script, /window\.SpeechRecognition \|\| window\.webkitSpeechRecognition/);
-  assert.match(script, /MAX_VOICE_RECOGNITION_ATTEMPTS = 2/);
-  assert.match(script, /MAX_CALL_MESSAGE_REPEATS = 2/);
-  assert.match(script, /Ouvindo sua resposta/);
+  assert.match(script, /MAX_QUESTION_REPETITIONS = 1/);
+  assert.match(script, /Você entendeu o lembrete\?/);
+  assert.match(script, /\^\(sim\|entendi\|entendi sim\)\$/);
+  assert.match(script, /Tudo bem\. Até logo!/);
+  assert.match(script, /Ouvindo…/);
   assert.match(script, /not-allowed/);
-  assert.match(html, /id="call-postpone-time"/);
-  assert.match(html, /id="repeat-call-message"/);
+  assert.match(script, /data-call-appointment/);
+  assert.match(script, /getNextScheduledReminder\(state, new Date\(\)\)/);
+  assert.match(script, /acknowledgeReminderUnderstanding\(state, activeCallReminder\)/);
+  assert.match(script, /window\.setInterval\(refreshUpcomingReminder, 30000\)/);
   assert.match(html, /id="call-listening-status"/);
   assert.match(html, /Histórico de ligações demonstrativas/);
+  assert.doesNotMatch(html, /id="call-postpone-time"/);
 });
 
 test('consultas e exames permanece centrado na agenda e a busca fica disponível na família', () => {

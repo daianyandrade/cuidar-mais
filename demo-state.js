@@ -24,6 +24,7 @@ export function createDemoState() {
       }
     ],
     reminder: { medicationId: 'med-sinvastatina', time: '21:00', status: 'pending', confirmedAt: null },
+    reminderAcknowledgements: [],
     history: [],
     appointments: [
       {
@@ -52,6 +53,57 @@ export function getMedication(state, medicationId) {
 export function getReminderCount(state) {
   return state.medications.filter((medication) => medication.active)
     .reduce((total, medication) => total + medication.times.length, 0);
+}
+
+function localDateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function reminderMoment(date, time) {
+  const [hours, minutes] = String(time).split(':').map(Number);
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes, 0, 0);
+}
+
+function hasAcknowledgement(state, medicationId, time, date) {
+  return (state.reminderAcknowledgements ?? []).some((entry) => (
+    entry.medicationId === medicationId && entry.time === time && entry.date === date
+  ));
+}
+
+export function getNextScheduledReminder(state, now = new Date()) {
+  const currentMinute = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0, 0);
+  const dates = [
+    new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+    new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+  ];
+  const candidates = [];
+  for (const date of dates) {
+    for (const medication of state.medications ?? []) {
+      if (!medication.active || medication.firstDoseStatus === 'not-taken') continue;
+      for (const time of medication.times ?? []) {
+        if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(time))) continue;
+        const moment = reminderMoment(date, time);
+        const scheduleDate = localDateKey(moment);
+        if (moment.getTime() < currentMinute.getTime() || hasAcknowledgement(state, medication.id, time, scheduleDate)) continue;
+        candidates.push({ medicationId: medication.id, time: String(time), date: scheduleDate, at: moment.toISOString() });
+      }
+    }
+  }
+  return candidates.sort((first, second) => first.at.localeCompare(second.at))[0] ?? null;
+}
+
+export function acknowledgeReminderUnderstanding(state, reminder, understoodAt = new Date().toISOString()) {
+  if (!reminder?.medicationId || !/^([01]\d|2[0-3]):[0-5]\d$/.test(String(reminder.time)) || !/^\d{4}-\d{2}-\d{2}$/.test(String(reminder.date))) {
+    throw new Error('Lembrete programado não encontrado.');
+  }
+  const nextState = clone(state);
+  const existing = nextState.reminderAcknowledgements ?? [];
+  if (!existing.some((entry) => entry.medicationId === reminder.medicationId && entry.time === reminder.time && entry.date === reminder.date)) {
+    nextState.reminderAcknowledgements = [{
+      medicationId: reminder.medicationId, time: reminder.time, date: reminder.date, understoodAt
+    }, ...existing].slice(0, 120);
+  }
+  return nextState;
 }
 
 export function calculateSchedule(firstTime, intervalHours) {
