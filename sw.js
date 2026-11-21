@@ -1,9 +1,10 @@
-const CACHE_NAME = 'cuidar-plus-v36';
+const CACHE_NAME = 'cuidar-plus-v37';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/styles.css',
   '/app.js',
+  '/voice-assistant.js',
   '/demo-state.js',
   '/manifest.webmanifest',
   '/icons/icon-192.png',

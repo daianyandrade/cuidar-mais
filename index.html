@@ -43,6 +43,18 @@
         <p id="voice-menu-status" class="voice-menu-status" role="status" aria-live="polite" hidden></p>
       </header>
 
+      <section id="voice-assistant-response" class="voice-assistant-response" aria-labelledby="voice-assistant-title" aria-live="polite" hidden>
+        <p class="voice-assistant-kicker">Assistente de voz · simulação</p>
+        <h2 id="voice-assistant-title">Cuidar+ respondeu</h2>
+        <p id="voice-assistant-message"></p>
+        <div class="voice-assistant-actions">
+          <button id="voice-assistant-repeat" class="secondary-action" type="button">Ouvir resposta</button>
+          <button id="voice-assistant-retry" class="primary-action" type="button">Falar novamente</button>
+          <button id="voice-assistant-confirm-call" class="primary-action" type="button" hidden>Confirmar ligação</button>
+          <button id="voice-assistant-cancel-call" class="secondary-action" type="button" hidden>Cancelar</button>
+        </div>
+      </section>
+
       <section id="inicio" class="welcome" aria-labelledby="welcome-title">
         <div class="profile-avatar" aria-hidden="true">
           <img src="/icons/dona-maria-avatar-v1.png" alt="" />
@@ -60,6 +72,7 @@
 
       <section id="conteudo" class="content" tabindex="-1" aria-label="Opções principais">
         <section id="home-view">
+        <p class="home-demo-label">Dados fictícios · Modo demonstração</p>
         <section class="home-summary-grid" aria-label="Próximos lembretes">
         <article class="medicine-card" aria-labelledby="medicine-title">
           <span class="focus-label"><span aria-hidden="true">●</span> Foco principal</span>
@@ -118,6 +131,7 @@
             <h2 id="medications-view-title">Meus medicamentos</h2>
             <p>Confira os lembretes cadastrados. A confirmação registra somente o recebimento do aviso.</p>
           </div>
+          <button class="listen-section-button" type="button" data-assistant-read="medications">🔊 Ouvir meus medicamentos</button>
 
           <section class="reminder-control-panel" aria-label="Ações do próximo lembrete">
             <p id="home-reminder-status" class="reminder-status pending" aria-live="polite">Lembrete pendente de confirmação</p>
@@ -264,6 +278,7 @@
             <h2 id="consultations-view-title">Consultas e Exames</h2>
             <p>Cuide da sua saúde com mais facilidade.</p>
           </div>
+          <button class="listen-section-button" type="button" data-assistant-read="consultations">🔊 Ouvir minha agenda</button>
 
           <div class="consultation-tabs" role="tablist" aria-label="Opções de consultas e exames" hidden>
             <button id="agenda-tab" class="active" type="button" role="tab" aria-selected="true" aria-controls="agenda-panel">Minha agenda</button>
@@ -330,14 +345,28 @@
             <div><strong>Dona Maria</strong><p>Perfil demonstrativo da pessoa idosa vinculada.</p></div>
             <span class="authorized-chip">Vínculo autorizado<br />· demonstração</span>
           </article>
+          <button class="listen-section-button" type="button" data-assistant-read="family">🔊 Ouvir meus contatos</button>
 
           <section class="family-section" aria-labelledby="my-ubs-title">
             <h3 id="my-ubs-title">Minha UBS</h3>
-            <article class="ubs-reference-card">
-              <span class="ubs-reference-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M8 56V25l24-14 24 14v31H8Zm14-19h20M32 27v20M14 18h36" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 20v14M25 27h14" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span>
-              <div><strong>Unidade de referência</strong><p>Consulte endereço e telefone da sua UBS antes de ligar.</p></div>
-            </article>
+            <article id="ubs-reference-card" class="ubs-reference-card" aria-live="polite"></article>
+            <button class="listen-section-button" type="button" data-assistant-read="ubs">🔊 Ouvir informações da UBS</button>
+            <a id="ubs-call-link" class="primary-action ubs-call-link" href="tel:" hidden>Ligar para minha UBS</a>
+            <button id="ubs-call-unavailable" class="primary-action full-width" type="button" disabled aria-describedby="ubs-phone-status">Ligar para minha UBS</button>
+            <p id="ubs-phone-status" class="ubs-phone-status">Telefone não cadastrado.</p>
             <button id="open-ubs-finder" class="secondary-action full-width" type="button">Encontrar minha UBS</button>
+            <details class="medicine-form-panel">
+              <summary>Editar minha UBS</summary>
+              <p class="form-intro">No modo demonstração, use somente dados fictícios. O telefone é opcional e nunca é inventado pelo Cuidar+.</p>
+              <form id="ubs-form" novalidate>
+                <label>Nome da UBS/USF<input name="name" type="text" required maxlength="100" /></label>
+                <label>Bairro<input name="neighborhood" type="text" required maxlength="80" /></label>
+                <label>Endereço<input name="address" type="text" required maxlength="160" /></label>
+                <label>Telefone (opcional)<input name="phone" type="tel" maxlength="30" /></label>
+                <p id="ubs-form-message" class="form-message" role="alert" hidden></p>
+                <button class="primary-action full-width" type="submit">Salvar UBS</button>
+              </form>
+            </details>
           </section>
 
           <section class="family-section" aria-labelledby="family-status-title">
@@ -354,7 +383,7 @@
               <form id="family-contact-form" novalidate>
                 <label>Nome do familiar ou cuidador<input name="name" type="text" required maxlength="70" placeholder="Ex.: Ana" /></label>
                 <label>Relação com a pessoa idosa<input name="relationship" type="text" required maxlength="50" placeholder="Ex.: Filha ou cuidador" /></label>
-                <label>Telefone de referência (demonstração)<input name="phone" type="tel" required maxlength="30" placeholder="Ex.: (00) 00000-0000" /></label>
+                <label>Telefone de referência (opcional)<input name="phone" type="tel" maxlength="30" placeholder="Informe somente se houver um número autorizado" /></label>
                 <label class="consent-check"><input name="authorized" type="checkbox" required /> <span>Confirmo que há autorização demonstrativa para este vínculo.</span></label>
                 <p id="family-contact-message" class="form-message" role="alert" hidden></p>
                 <button class="primary-action full-width" type="submit">Salvar vínculo demonstrativo</button>

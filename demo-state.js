@@ -1,4 +1,4 @@
-export const DEMO_STORAGE_KEY = 'cuidar-mais-profile-state-v2';
+export const DEMO_STORAGE_KEY = 'cuidar-mais-profile-state-v3';
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -6,41 +6,44 @@ function clone(value) {
 
 export function createDemoState() {
   return {
+    mode: 'demonstration',
+    demoProfileVersion: 'tech-show-2026',
     medications: [
       {
-        id: 'med-sinvastatina', name: 'Sinvastatina', dosage: '10 mg', times: ['21:00'],
-        startDate: '', endDate: '', frequency: '1', intervalHours: '', firstTime: '21:00', firstDoseStatus: 'reported-now',
-        notes: 'Horário informado para este protótipo.', active: true
+        id: 'med-losartana-demo', name: 'Losartana', dosage: '50 mg', times: ['08:00', '20:00'],
+        startDate: '', endDate: '', frequency: '2', intervalHours: '12', firstTime: '08:00', firstDoseStatus: 'reported-now',
+        notes: 'Dado fictício para a mostra de tecnologia.', active: true
       },
       {
-        id: 'med-gestinol', name: 'Gestinol', dosage: '30 mcg', times: ['21:00'],
-        startDate: '', endDate: '', frequency: '1', intervalHours: '', firstTime: '21:00', firstDoseStatus: 'reported-now',
-        notes: 'Horário informado para este protótipo.', active: true
-      },
-      {
-        id: 'med-tylenol-sinus', name: 'Tylenol Sinus', dosage: 'Dose não informada', times: ['06:00', '14:00', '22:00'],
-        startDate: '', endDate: '', frequency: '3', intervalHours: '8', firstTime: '06:00', firstDoseStatus: 'reported-now',
-        notes: 'Horários simulados para o protótipo; confira a orientação recebida antes de usar.', active: true
+        id: 'med-omeprazol-demo', name: 'Omeprazol', dosage: '20 mg', times: ['07:00'],
+        startDate: '', endDate: '', frequency: '1', intervalHours: '24', firstTime: '07:00', firstDoseStatus: 'reported-now',
+        notes: 'Dado fictício para a mostra de tecnologia.', active: true
       }
     ],
-    reminder: { medicationId: 'med-sinvastatina', time: '21:00', status: 'pending', confirmedAt: null },
+    reminder: { medicationId: 'med-losartana-demo', time: '08:00', status: 'pending', confirmedAt: null },
     reminderAcknowledgements: [],
     history: [],
     appointments: [
       {
-        id: 'appointment-geriatry-demo', type: 'Consulta', title: 'Consulta com geriatra',
-        date: '2026-11-24', time: '09:00', location: 'Unidade de saúde demonstrativa',
-        notes: 'Exemplo de compromisso fictício.', reminder: true, status: 'scheduled'
+        id: 'appointment-cardiology-demo', type: 'Consulta', title: 'Cardiologia',
+        date: '2026-11-25', time: '14:00', location: 'Unidade de saúde demonstrativa',
+        notes: 'Dado fictício para a mostra de tecnologia.', reminder: true, status: 'scheduled'
       },
       {
         id: 'appointment-blood-demo', type: 'Exame', title: 'Exame de sangue',
-        date: '2026-11-27', time: '07:30', location: 'Laboratório demonstrativo',
-        notes: 'Exemplo de compromisso fictício.', reminder: true, status: 'scheduled'
+        date: '2026-11-28', time: '07:00', location: 'Laboratório demonstrativo',
+        notes: 'Dado fictício para a mostra de tecnologia.', reminder: true, status: 'scheduled'
       }
     ],
     familyContacts: [
-      { id: 'family-ana-demo', name: 'Ana', relationship: 'Filha', phone: '(00) 00000-0000', authorized: true }
+      { id: 'family-ana-demo', name: 'Ana', relationship: 'Filha', phone: '', authorized: true }
     ],
+    ubs: {
+      name: 'UBS de Demonstração Cuidar+',
+      neighborhood: 'Bairro Demonstrativo',
+      address: 'Endereço fictício — apenas para apresentação',
+      phone: ''
+    },
     callHistory: [],
     doseHistory: []
   };
@@ -180,11 +183,24 @@ export function addFamilyContact(state, values, id = `family-${Date.now()}`) {
   const name = String(values.name ?? '').trim();
   const relationship = String(values.relationship ?? '').trim();
   const phone = String(values.phone ?? '').trim();
-  if (!name || !relationship || !phone || values.authorized !== true) {
-    throw new Error('Informe nome, relação, telefone e a autorização demonstrativa.');
+  if (!name || !relationship || values.authorized !== true) {
+    throw new Error('Informe nome, relação e a autorização demonstrativa. O telefone é opcional.');
   }
   const nextState = clone(state);
   nextState.familyContacts = [...(nextState.familyContacts ?? []), { id, name, relationship, phone, authorized: true }];
+  return nextState;
+}
+
+export function updateReferenceUbs(state, values) {
+  const name = String(values.name ?? '').trim();
+  const neighborhood = String(values.neighborhood ?? '').trim();
+  const address = String(values.address ?? '').trim();
+  const phone = String(values.phone ?? '').trim();
+  if (!name || !neighborhood || !address) {
+    throw new Error('Informe o nome, o bairro e o endereço da UBS.');
+  }
+  const nextState = clone(state);
+  nextState.ubs = { name, neighborhood, address, phone };
   return nextState;
 }
 

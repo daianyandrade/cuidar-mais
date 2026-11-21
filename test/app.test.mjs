@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { acknowledgeReminderUnderstanding, addAppointment, addDoseSelfReport, addFamilyContact, addMedication, addSimulationCallEvent, addSimulationCallRecord, calculateSchedule, confirmReminder, createDemoState, getNextScheduledReminder, getReminderCount, updateMedication } from '../demo-state.js';
+import { acknowledgeReminderUnderstanding, addAppointment, addDoseSelfReport, addFamilyContact, addMedication, addSimulationCallEvent, addSimulationCallRecord, calculateSchedule, confirmReminder, createDemoState, getNextScheduledReminder, getReminderCount, updateMedication, updateReferenceUbs } from '../demo-state.js';
 import { fetchCuiabaPublicHealthUnits, normalizeCnesUnit } from '../api/cuiaba-units.js';
+import { createMenuReading, createVoiceResponse, identifyVoiceCommand } from '../voice-assistant.js';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const script = await readFile(new URL('../app.js', import.meta.url), 'utf8');
@@ -51,6 +52,50 @@ test('o menu oferece comando de voz com retorno visual e mantém a navegação p
   assert.match(html, /data-view="medications"/);
 });
 
+test('o assistente de voz consulta os dados demonstrativos e prepara respostas faladas', () => {
+  const state = createDemoState();
+  const now = new Date(2026, 10, 21, 9, 0, 0);
+  assert.equal(identifyVoiceCommand('Quais medicamentos eu tomo?'), 'medications');
+  assert.equal(identifyVoiceCommand('Quando é minha próxima consulta?'), 'next-appointment');
+  assert.equal(identifyVoiceCommand('Quais exames tenho?'), 'exams');
+  assert.equal(identifyVoiceCommand('Qual é minha UBS?'), 'ubs');
+  assert.equal(identifyVoiceCommand('Quero ligar para meu posto de saúde'), 'ubs-call');
+  assert.equal(identifyVoiceCommand('Ligar para os Bombeiros'), 'emergency-call');
+  const medications = createVoiceResponse(state, 'medications', { now });
+  assert.match(medications.text, /Losartana, 50 mg/);
+  assert.match(medications.text, /Omeprazol, 20 mg/);
+  const nextAppointment = createVoiceResponse(state, 'next-appointment', { now });
+  assert.match(nextAppointment.text, /Cardiologia/);
+  assert.match(nextAppointment.text, /25 de novembro de 2026/);
+  const exams = createVoiceResponse(state, 'exams', { now });
+  assert.match(exams.text, /Exame de sangue/);
+  const ubs = createVoiceResponse(state, 'ubs', { now });
+  assert.match(ubs.text, /UBS de Demonstração Cuidar\+/);
+  assert.match(ubs.text, /telefone não cadastrado/);
+  const contacts = createMenuReading(state, 'family', { now });
+  assert.match(contacts.text, /Ana, Filha, contato demonstrativo sem telefone real/);
+  const expiredAgenda = createVoiceResponse(state, 'agenda', { now: new Date(2026, 11, 1, 9, 0, 0) });
+  assert.match(expiredAgenda.text, /Não há consultas ou exames futuros cadastrados/);
+});
+
+test('os controles de ouvir e a resposta visível usam o mesmo assistente de voz', () => {
+  assert.match(html, /id="voice-assistant-response"/);
+  assert.match(html, /id="voice-assistant-message"/);
+  assert.match(html, /data-assistant-read="medications"/);
+  assert.match(html, /data-assistant-read="consultations"/);
+  assert.match(html, /data-assistant-read="family"/);
+  assert.match(html, /data-assistant-read="ubs"/);
+  assert.match(html, /id="ubs-form"/);
+  assert.match(html, /id="ubs-call-link"/);
+  assert.match(script, /createVoiceResponse/);
+  assert.match(script, /createMenuReading/);
+  assert.match(script, /startAssistantVoiceRecognition/);
+  assert.match(script, /new SpeechSynthesisUtterance\(answer\.text\)/);
+  assert.match(script, /requiresCallConfirmation/);
+  assert.match(script, /dialEmergency/);
+  assert.match(script, /window\.location\.href = href/);
+});
+
 test('o aplicativo oferece a estrutura necessária para instalação web', async () => {
   const manifest = await readFile(new URL('../manifest.webmanifest', import.meta.url), 'utf8');
   const serviceWorker = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
@@ -68,6 +113,8 @@ test('o aplicativo oferece a estrutura necessária para instalação web', async
   assert.match(script, /beforeinstallprompt/);
   assert.match(script, /appinstalled/);
   assert.match(script, /isStandalone/);
+  const buildScript = await readFile(new URL('../scripts/build.mjs', import.meta.url), 'utf8');
+  assert.match(buildScript, /'voice-assistant\.js'/);
 });
 
 test('o manifesto declara ícones PNG válidos para instalação Android', async () => {
@@ -102,18 +149,20 @@ test('o medicamento demonstrativo pode ser cadastrado com horários', () => {
   }, 'med-vitamina-demo');
   assert.equal(state.medications[0].name, 'Vitamina D');
   assert.deepEqual(state.medications[0].times, ['08:00', '18:00']);
-  assert.equal(getReminderCount(state), 7);
+  assert.equal(getReminderCount(state), 5);
 });
 
-test('o perfil inicial registra os horários autorizados e identifica o horário simulado', () => {
+test('o perfil de demonstração usa apenas os dados fictícios definidos para a mostra', () => {
   const state = createDemoState();
-  const sinvastatina = state.medications.find((medication) => medication.id === 'med-sinvastatina');
-  const gestinol = state.medications.find((medication) => medication.id === 'med-gestinol');
-  const tylenol = state.medications.find((medication) => medication.id === 'med-tylenol-sinus');
-  assert.deepEqual(sinvastatina.times, ['21:00']);
-  assert.deepEqual(gestinol.times, ['21:00']);
-  assert.deepEqual(tylenol.times, ['06:00', '14:00', '22:00']);
-  assert.match(tylenol.notes, /simulados/i);
+  const losartana = state.medications.find((medication) => medication.id === 'med-losartana-demo');
+  const omeprazol = state.medications.find((medication) => medication.id === 'med-omeprazol-demo');
+  assert.deepEqual(losartana.times, ['08:00', '20:00']);
+  assert.deepEqual(omeprazol.times, ['07:00']);
+  assert.equal(state.appointments[0].date, '2026-11-25');
+  assert.equal(state.appointments[1].date, '2026-11-28');
+  assert.equal(state.ubs.name, 'UBS de Demonstração Cuidar+');
+  assert.equal(state.ubs.phone, '');
+  assert.equal(state.familyContacts[0].phone, '');
 });
 
 test('o cadastro pode aguardar a primeira dose sem registrar um horário inventado', () => {
@@ -131,12 +180,12 @@ test('a programação automática calcula horários a partir do primeiro horári
 
 test('a edição permite atualizar a programação sem alterar a dosagem por sugestão', () => {
   const initialState = createDemoState();
-  const state = updateMedication(initialState, 'med-sinvastatina', {
-    name: 'Sinvastatina', dosage: '10 mg', times: ['07:00', '19:00'],
+  const state = updateMedication(initialState, 'med-losartana-demo', {
+    name: 'Losartana', dosage: '50 mg', times: ['07:00', '19:00'],
     intervalHours: '12', firstTime: '07:00', frequency: '2', automaticSchedule: true
   });
   assert.deepEqual(state.medications[0].times, ['07:00', '19:00']);
-  assert.equal(state.medications[0].dosage, '10 mg');
+  assert.equal(state.medications[0].dosage, '50 mg');
 });
 
 test('a agenda demonstrativa possui consultas e exames e aceita novo compromisso', () => {
@@ -164,6 +213,14 @@ test('a família demonstrativa acompanha o idoso mediante autorização', () => 
   }, 'family-joao-demo');
   assert.equal(state.familyContacts.length, 2);
   assert.equal(state.familyContacts[1].authorized, true);
+});
+
+test('a UBS pode ser atualizada sem criar telefone fictício', () => {
+  const state = updateReferenceUbs(createDemoState(), {
+    name: 'UBS Exemplo', neighborhood: 'Bairro Exemplo', address: 'Rua Exemplo, 10', phone: ''
+  });
+  assert.equal(state.ubs.name, 'UBS Exemplo');
+  assert.equal(state.ubs.phone, '');
 });
 
 test('a página preserva permissões familiares e evita duplicar ligações simuladas', () => {
@@ -229,8 +286,8 @@ test('a confirmação por voz não registra dose como tomada', async () => {
 
 test('a ligação demonstrativa registra apenas que o lembrete foi compreendido', () => {
   let state = createDemoState();
-  state = addSimulationCallEvent(state, { kind: 'medication', event: 'reminder-understood', medicationId: 'med-sinvastatina', createdAt: '2026-11-18T08:02:00.000Z' });
-  assert.equal(state.reminder.time, '21:00');
+  state = addSimulationCallEvent(state, { kind: 'medication', event: 'reminder-understood', medicationId: 'med-losartana-demo', createdAt: '2026-11-18T08:02:00.000Z' });
+  assert.equal(state.reminder.time, '08:00');
   assert.equal(state.reminder.status, 'pending');
   assert.equal(state.callHistory[0].event, 'reminder-understood');
   assert.equal(state.doseHistory.length, 0);
@@ -241,19 +298,19 @@ test('o próximo lembrete acompanha o horário real e avança após ser compreen
   const initialState = createDemoState();
   const first = getNextScheduledReminder(initialState, now);
   assert.deepEqual({ medicationId: first.medicationId, time: first.time, date: first.date }, {
-    medicationId: 'med-tylenol-sinus', time: '14:00', date: '2026-11-20'
+    medicationId: 'med-losartana-demo', time: '20:00', date: '2026-11-20'
   });
   const state = acknowledgeReminderUnderstanding(initialState, first, '2026-11-20T13:01:00.000Z');
   const next = getNextScheduledReminder(state, now);
   assert.deepEqual({ medicationId: next.medicationId, time: next.time, date: next.date }, {
-    medicationId: 'med-sinvastatina', time: '21:00', date: '2026-11-20'
+    medicationId: 'med-omeprazol-demo', time: '07:00', date: '2026-11-21'
   });
-  const atTheSameMinute = getNextScheduledReminder(state, new Date(2026, 10, 20, 21, 0, 30));
+  const atTheSameMinute = getNextScheduledReminder(initialState, new Date(2026, 10, 20, 20, 0, 30));
   assert.deepEqual({ medicationId: atTheSameMinute.medicationId, time: atTheSameMinute.time }, {
-    medicationId: 'med-sinvastatina', time: '21:00'
+    medicationId: 'med-losartana-demo', time: '20:00'
   });
-  const afterSinvastatin = acknowledgeReminderUnderstanding(state, atTheSameMinute, '2026-11-20T21:00:35.000Z');
-  assert.equal(getNextScheduledReminder(afterSinvastatin, new Date(2026, 10, 20, 21, 0, 40)).medicationId, 'med-gestinol');
+  const afterLosartana = acknowledgeReminderUnderstanding(initialState, atTheSameMinute, '2026-11-20T20:00:35.000Z');
+  assert.equal(getNextScheduledReminder(afterLosartana, new Date(2026, 10, 20, 20, 0, 40)).medicationId, 'med-omeprazol-demo');
   assert.equal(state.doseHistory.length, 0);
   assert.equal(state.reminder.status, 'pending');
 });

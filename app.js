@@ -1,4 +1,5 @@
-import { DEMO_STORAGE_KEY, acknowledgeReminderUnderstanding, addAppointment, addFamilyContact, addMedication, addSimulationCallEvent, addSimulationCallRecord, calculateSchedule, createDemoState, getMedication, getNextScheduledReminder, getReminderCount, updateMedication } from './demo-state.js';
+import { DEMO_STORAGE_KEY, acknowledgeReminderUnderstanding, addAppointment, addFamilyContact, addMedication, addSimulationCallEvent, addSimulationCallRecord, calculateSchedule, createDemoState, getMedication, getNextScheduledReminder, getReminderCount, updateMedication, updateReferenceUbs } from './demo-state.js';
+import { createMenuReading, createVoiceResponse, identifyVoiceCommand } from './voice-assistant.js';
 
 const fontToggle = document.querySelector('[data-font-toggle]');
 const toast = document.querySelector('.toast');
@@ -29,6 +30,14 @@ const appointmentForm = document.querySelector('#appointment-form');
 const appointmentFormMessage = document.querySelector('#appointment-form-message');
 const familyContactForm = document.querySelector('#family-contact-form');
 const familyContactMessage = document.querySelector('#family-contact-message');
+const ubsForm = document.querySelector('#ubs-form');
+const ubsFormMessage = document.querySelector('#ubs-form-message');
+const voiceAssistantResponse = document.querySelector('#voice-assistant-response');
+const voiceAssistantMessage = document.querySelector('#voice-assistant-message');
+const voiceAssistantRepeatButton = document.querySelector('#voice-assistant-repeat');
+const voiceAssistantRetryButton = document.querySelector('#voice-assistant-retry');
+const voiceAssistantConfirmCallButton = document.querySelector('#voice-assistant-confirm-call');
+const voiceAssistantCancelCallButton = document.querySelector('#voice-assistant-cancel-call');
 const callSimulation = document.querySelector('#call-simulation');
 const callSimulationMessage = document.querySelector('#call-simulation-message');
 const callSimulationRecipient = document.querySelector('#call-simulation-recipient');
@@ -43,6 +52,10 @@ let activeCallAppointmentId = null;
 let activeCallReminder = null;
 let voiceRecognition = null;
 let menuVoiceRecognition = null;
+let assistantVoiceRecognition = null;
+let assistantRecognitionAttempts = 0;
+let pendingAssistantAction = null;
+let lastAssistantResponse = '';
 let recognitionAttempts = 0;
 let callAnswered = false;
 let toastTimer;
@@ -81,6 +94,7 @@ function loadState() {
         ...savedState,
         appointments: Array.isArray(savedState.appointments) ? savedState.appointments : defaults.appointments,
         familyContacts: Array.isArray(savedState.familyContacts) ? savedState.familyContacts : defaults.familyContacts,
+        ubs: savedState.ubs && typeof savedState.ubs === 'object' ? savedState.ubs : defaults.ubs,
         callHistory: Array.isArray(savedState.callHistory) ? savedState.callHistory : defaults.callHistory,
         reminderAcknowledgements: Array.isArray(savedState.reminderAcknowledgements) ? savedState.reminderAcknowledgements : defaults.reminderAcknowledgements
       };
@@ -211,6 +225,174 @@ function startMenuVoiceRecognition() {
     finishMenuVoiceRecognition();
     setVoiceMenuStatus('Comando de voz não disponível. Use os botões do menu.', false);
   }
+}
+
+function setAssistantListening(isListening) {
+  voiceMenuButton.classList.toggle('listening', isListening);
+  voiceMenuButton.setAttribute('aria-pressed', String(isListening));
+  homeVoiceMenuButton.setAttribute('aria-pressed', String(isListening));
+  homeVoiceMenuButton.setAttribute('aria-label', isListening ? 'Parar assistente de voz' : 'Falar com o Cuidar+ por voz');
+}
+
+function stopAssistantVoiceRecognition() {
+  if (assistantVoiceRecognition) {
+    const recognition = assistantVoiceRecognition;
+    assistantVoiceRecognition = null;
+    recognition.onresult = null;
+    recognition.onerror = null;
+    recognition.onend = null;
+    try { recognition.abort(); } catch { /* A escuta já pode ter terminado. */ }
+  }
+  setAssistantListening(false);
+}
+
+function showAssistantResponse(answer) {
+  lastAssistantResponse = answer.text;
+  voiceAssistantMessage.textContent = answer.text;
+  voiceAssistantResponse.hidden = false;
+  voiceAssistantConfirmCallButton.hidden = !answer.requiresCallConfirmation;
+  voiceAssistantCancelCallButton.hidden = !answer.requiresCallConfirmation;
+}
+
+function speakAssistantResponse(answer, { listenAfter = false } = {}) {
+  showAssistantResponse(answer);
+  if (!('speechSynthesis' in window)) {
+    setVoiceMenuStatus('A resposta está na tela. A leitura em voz não está disponível neste navegador.', false);
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const speech = new SpeechSynthesisUtterance(answer.text);
+  speech.lang = 'pt-BR';
+  speech.rate = 0.92;
+  let completed = false;
+  const finish = () => {
+    if (completed) return;
+    completed = true;
+    if (listenAfter) startAssistantVoiceRecognition({ confirmationOnly: true });
+  };
+  speech.onend = finish;
+  speech.onerror = finish;
+  window.speechSynthesis.speak(speech);
+}
+
+function ubsPhoneHref() {
+  const phone = state.ubs?.phone || '';
+  const digits = phone.replace(/[^\d+]/g, '');
+  return digits ? `tel:${digits}` : '';
+}
+
+function confirmAssistantUbsCall() {
+  const href = ubsPhoneHref();
+  if (!href) {
+    pendingAssistantAction = null;
+    speakAssistantResponse({ text: 'Não há telefone cadastrado para a sua UBS. Por segurança, não vou abrir o discador.' });
+    return;
+  }
+  pendingAssistantAction = null;
+  stopAssistantVoiceRecognition();
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  voiceAssistantConfirmCallButton.hidden = true;
+  voiceAssistantCancelCallButton.hidden = true;
+  setVoiceMenuStatus('Abrindo o discador para a sua UBS.', false);
+  window.location.href = href;
+}
+
+function handleAssistantTranscript(transcript, { confirmationOnly = false } = {}) {
+  const intent = identifyVoiceCommand(transcript);
+  if (pendingAssistantAction === 'ubs-call') {
+    if (intent === 'confirm-call') {
+      confirmAssistantUbsCall();
+      return;
+    }
+    if (intent === 'cancel-call') {
+      pendingAssistantAction = null;
+      speakAssistantResponse({ text: 'Ligação cancelada.' });
+      return;
+    }
+    const answer = { text: 'Não entendi. Diga confirmar ligação ou toque em Cancelar.', requiresCallConfirmation: true };
+    speakAssistantResponse(answer);
+    return;
+  }
+  if (confirmationOnly) return;
+  const answer = createVoiceResponse(state, intent, { now: new Date(), nextReminder: getUpcomingReminder() });
+  if (answer.dialEmergency) {
+    pendingAssistantAction = null;
+    showAssistantResponse(answer);
+    setVoiceMenuStatus(answer.text, false);
+    openEmergencyDialer();
+    return;
+  }
+  pendingAssistantAction = answer.requiresCallConfirmation ? 'ubs-call' : null;
+  speakAssistantResponse(answer, { listenAfter: answer.requiresCallConfirmation });
+}
+
+function startAssistantVoiceRecognition({ confirmationOnly = false } = {}) {
+  if (!callSimulation.hidden) {
+    setVoiceMenuStatus('Encerre a ligação simulada antes de usar o assistente de voz.', false);
+    return;
+  }
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    const answer = { text: 'O reconhecimento de voz não está disponível neste navegador. Use os botões Ouvir para escutar as informações.' };
+    showAssistantResponse(answer);
+    setVoiceMenuStatus(answer.text, false);
+    return;
+  }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  stopAssistantVoiceRecognition();
+  const recognition = new Recognition();
+  assistantVoiceRecognition = recognition;
+  recognition.lang = 'pt-BR';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  let settled = false;
+  setAssistantListening(true);
+  setVoiceMenuStatus(confirmationOnly ? 'Ouvindo a confirmação da ligação…' : 'Ouvindo… pergunte sobre medicamentos, agenda, UBS ou família.', false);
+  recognition.onresult = (event) => {
+    settled = true;
+    const transcript = event.results?.[0]?.[0]?.transcript || '';
+    assistantVoiceRecognition = null;
+    setAssistantListening(false);
+    setVoiceMenuStatus('', true);
+    handleAssistantTranscript(transcript, { confirmationOnly });
+  };
+  recognition.onerror = (event) => {
+    if (settled) return;
+    settled = true;
+    assistantVoiceRecognition = null;
+    setAssistantListening(false);
+    const answer = event.error === 'not-allowed' || event.error === 'service-not-allowed'
+      ? { text: 'O microfone não foi autorizado. Use os botões Ouvir ou tente novamente.' }
+      : { text: 'Não foi possível ouvir. Toque em Falar novamente para tentar.' };
+    showAssistantResponse(answer);
+    setVoiceMenuStatus(answer.text, false);
+  };
+  recognition.onend = () => {
+    if (!settled && assistantVoiceRecognition === recognition) {
+      assistantVoiceRecognition = null;
+      setAssistantListening(false);
+      const answer = { text: 'Não foi possível ouvir. Toque em Falar novamente para tentar.' };
+      showAssistantResponse(answer);
+      setVoiceMenuStatus(answer.text, false);
+    }
+  };
+  try {
+    recognition.start();
+  } catch {
+    assistantVoiceRecognition = null;
+    setAssistantListening(false);
+    const answer = { text: 'O reconhecimento de voz não está disponível agora. Use os botões Ouvir.' };
+    showAssistantResponse(answer);
+    setVoiceMenuStatus(answer.text, false);
+  }
+}
+
+function readAssistantSection(section) {
+  stopAssistantVoiceRecognition();
+  const answer = createMenuReading(state, section, { now: new Date(), nextReminder: getUpcomingReminder() });
+  pendingAssistantAction = null;
+  speakAssistantResponse(answer);
 }
 
 function getActualInterval() {
@@ -346,6 +528,7 @@ function renderHome() {
     : 'Não há outro lembrete programado para agora.';
   document.querySelector('.focus-label').innerHTML = `<span aria-hidden="true">●</span> Próximo lembrete${reminder ? ` · ${reminderDayLabel(reminder)}` : ''}`;
   const appointment = [...(state.appointments ?? [])]
+    .filter((item) => appointmentIsFuture(item))
     .sort((first, second) => `${first.date}${first.time}`.localeCompare(`${second.date}${second.time}`))[0];
   const appointmentTitle = document.querySelector('#home-appointment-title');
   const appointmentDetails = document.querySelector('#home-appointment-details');
@@ -651,9 +834,16 @@ function formatAppointmentDate(date) {
   return { day, month: new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(new Date(Number(year), Number(month) - 1, Number(day))).replace('.', '').toUpperCase() };
 }
 
+function appointmentIsFuture(appointment, now = new Date()) {
+  const moment = new Date(`${appointment.date}T${appointment.time || '00:00'}:00`);
+  return !Number.isNaN(moment.getTime()) && moment.getTime() >= now.getTime();
+}
+
 function renderAppointments() {
   const list = document.querySelector('#appointment-list');
-  const appointments = state.appointments ?? [];
+  const appointments = (state.appointments ?? [])
+    .filter((appointment) => appointmentIsFuture(appointment))
+    .sort((first, second) => `${first.date}${first.time}`.localeCompare(`${second.date}${second.time}`));
   if (!appointments.length) {
     list.innerHTML = '<p class="empty-state">Nenhuma consulta ou exame demonstrativo cadastrado.</p>';
     return;
@@ -694,6 +884,33 @@ function setConsultationTab(tab) {
   if (!agenda) renderServices();
 }
 
+function renderUbs() {
+  const ubs = state.ubs ?? {};
+  const card = document.querySelector('#ubs-reference-card');
+  const name = ubs.name || 'UBS não cadastrada';
+  const neighborhood = ubs.neighborhood ? `Bairro: ${ubs.neighborhood}` : 'Bairro não informado.';
+  const address = ubs.address || 'Endereço não informado.';
+  const phone = ubs.phone ? `Telefone: ${ubs.phone}` : 'Telefone não cadastrado.';
+  card.innerHTML = `<span class="ubs-reference-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M8 56V25l24-14 24 14v31H8Zm14-19h20M32 27v20M14 18h36" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 20v14M25 27h14" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span><div><strong>${escapeHtml(name)}</strong><p>${escapeHtml(neighborhood)}</p><p>${escapeHtml(address)}</p><p>${escapeHtml(phone)}</p></div>`;
+
+  const href = ubsPhoneHref();
+  const callLink = document.querySelector('#ubs-call-link');
+  const unavailableButton = document.querySelector('#ubs-call-unavailable');
+  const phoneStatus = document.querySelector('#ubs-phone-status');
+  callLink.hidden = !href;
+  unavailableButton.hidden = Boolean(href);
+  if (href) {
+    callLink.href = href;
+    phoneStatus.textContent = 'O botão abre o discador deste aparelho.';
+  } else {
+    phoneStatus.textContent = 'Telefone não cadastrado. O Cuidar+ não inventa números.';
+  }
+  ubsForm.elements.name.value = ubs.name || '';
+  ubsForm.elements.neighborhood.value = ubs.neighborhood || '';
+  ubsForm.elements.address.value = ubs.address || '';
+  ubsForm.elements.phone.value = ubs.phone || '';
+}
+
 function renderFamily() {
   const reminder = getUpcomingReminder();
   const medication = reminder ? getMedication(state, reminder.medicationId) : null;
@@ -702,10 +919,10 @@ function renderFamily() {
     ? `<span class="family-status-icon pending" aria-hidden="true">!</span><div><strong>Próximo lembrete</strong><p>${escapeHtml(medication?.name || 'Medicamento')} · ${escapeHtml(reminder.time)} · ${escapeHtml(reminderDayLabel(reminder))}.</p></div>`
     : '<div><strong>Sem próximos lembretes</strong></div>';
   const contacts = state.familyContacts ?? [];
-  document.querySelector('#family-contact-list').innerHTML = contacts.length ? contacts.map((contact) => `<article class="family-contact-card"><span aria-hidden="true">●</span><div><strong>${escapeHtml(contact.name)}</strong><p>${escapeHtml(contact.relationship)} · ${escapeHtml(contact.phone)}</p></div><small>Autorizado<br />· demonstração</small></article>`).join('') : '<p class="empty-state">Nenhum familiar demonstrativo vinculado.</p>';
+  document.querySelector('#family-contact-list').innerHTML = contacts.length ? contacts.map((contact) => `<article class="family-contact-card"><span aria-hidden="true">●</span><div><strong>${escapeHtml(contact.name)}</strong><p>${escapeHtml(contact.relationship)}${contact.phone ? ` · ${escapeHtml(contact.phone)}` : ' · contato demonstrativo sem telefone real'}</p></div><small>Autorizado<br />· demonstração</small></article>`).join('') : '<p class="empty-state">Nenhum familiar demonstrativo vinculado.</p>';
 }
 
-function render() { renderHome(); renderMedicationList(); renderHistory(); renderCallHistory(); renderAppointments(); renderFamily(); }
+function render() { renderHome(); renderMedicationList(); renderHistory(); renderCallHistory(); renderAppointments(); renderUbs(); renderFamily(); }
 function showView(view) {
   const finder = view === 'finder';
   const medications = view === 'medications';
@@ -1009,14 +1226,37 @@ fontToggle.addEventListener('click', () => {
   showToast(enabled ? 'Texto aumentado.' : 'Texto no tamanho padrão.');
 });
 voiceMenuButton.addEventListener('click', () => {
-  if (menuVoiceRecognition) {
-    stopMenuVoiceRecognition('Comando de voz interrompido. Use os botões do menu quando quiser.');
+  if (assistantVoiceRecognition) {
+    stopAssistantVoiceRecognition();
+    setVoiceMenuStatus('Assistente de voz interrompido. Use os botões Ouvir quando quiser.', false);
     return;
   }
-  startMenuVoiceRecognition();
+  pendingAssistantAction = null;
+  startAssistantVoiceRecognition();
 });
 homeVoiceMenuButton.addEventListener('click', () => voiceMenuButton.click());
-document.querySelector('[data-read-page]').addEventListener('click', () => medicationsView.hidden ? speakReminder() : showToast('Use “Ouvir novamente” na tela inicial para reproduzir o lembrete.'));
+document.querySelector('[data-read-page]').addEventListener('click', () => {
+  if (!medicationsView.hidden) return readAssistantSection('medications');
+  if (!consultationsView.hidden) return readAssistantSection('consultations');
+  if (!familyView.hidden) return readAssistantSection('family');
+  const answer = createVoiceResponse(state, 'next-medication', { now: new Date(), nextReminder: getUpcomingReminder() });
+  speakAssistantResponse(answer);
+});
+document.querySelectorAll('[data-assistant-read]').forEach((button) => button.addEventListener('click', () => readAssistantSection(button.dataset.assistantRead)));
+voiceAssistantRepeatButton.addEventListener('click', () => {
+  if (!lastAssistantResponse) return;
+  speakAssistantResponse({ text: lastAssistantResponse, requiresCallConfirmation: pendingAssistantAction === 'ubs-call' });
+});
+voiceAssistantRetryButton.addEventListener('click', () => {
+  pendingAssistantAction = null;
+  startAssistantVoiceRecognition();
+});
+voiceAssistantConfirmCallButton.addEventListener('click', confirmAssistantUbsCall);
+voiceAssistantCancelCallButton.addEventListener('click', () => {
+  stopAssistantVoiceRecognition();
+  pendingAssistantAction = null;
+  speakAssistantResponse({ text: 'Ligação cancelada.' });
+});
 document.querySelectorAll('[data-view]').forEach((element) => element.addEventListener('click', () => showView(element.dataset.view)));
 document.querySelectorAll('[data-demo-action]').forEach((element) => element.addEventListener('click', () => showFutureMessage(element.dataset.demoAction)));
 document.querySelectorAll('[data-open-medicine-finder]').forEach((button) => button.addEventListener('click', () => {
@@ -1136,6 +1376,23 @@ familyContactForm.addEventListener('submit', (event) => {
   } catch (error) {
     familyContactMessage.textContent = error.message;
     familyContactMessage.hidden = false;
+  }
+});
+ubsForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  ubsFormMessage.hidden = true;
+  const formData = new FormData(ubsForm);
+  try {
+    state = updateReferenceUbs(state, {
+      name: formData.get('name'), neighborhood: formData.get('neighborhood'), address: formData.get('address'), phone: formData.get('phone')
+    });
+    saveState();
+    renderUbs();
+    ubsForm.closest('details').open = false;
+    showToast('Informações da UBS atualizadas neste dispositivo.');
+  } catch (error) {
+    ubsFormMessage.textContent = error.message;
+    ubsFormMessage.hidden = false;
   }
 });
 document.querySelector('#open-family-search').addEventListener('click', () => {

@@ -7,6 +7,7 @@ const staticFiles = [
   'index.html',
   'styles.css',
   'app.js',
+  'voice-assistant.js',
   'demo-state.js',
   'sw.js',
   'manifest.webmanifest',
