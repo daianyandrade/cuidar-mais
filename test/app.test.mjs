@@ -166,10 +166,11 @@ test('a família demonstrativa acompanha o idoso mediante autorização', () => 
   assert.equal(state.familyContacts[1].authorized, true);
 });
 
-test('a página identifica ligações e permissões familiares como demonstração', () => {
-  assert.match(html, /Lembrete por ligação/);
-  assert.match(html, /Nenhuma chamada real será feita/);
+test('a página preserva permissões familiares e evita duplicar ligações simuladas', () => {
   assert.match(html, /Permissões de acesso/);
+  assert.doesNotMatch(html, /Testar ligação simulada/);
+  assert.doesNotMatch(html, /Simular ligação para UBS/);
+  assert.doesNotMatch(html, /Simular ligação para ACS/);
 });
 
 test('a família oferece ligação real para emergência sem simulação', () => {
@@ -209,7 +210,7 @@ test('a ligação da Mostra é uma simulação registrada sem afirmar chamada re
   assert.match(html, />Atender</);
   assert.match(html, />Encerrar</);
   assert.doesNotMatch(html, /id="call-confirm-receipt"/);
-  assert.match(html, /Nenhuma chamada real será feita/);
+  assert.match(script, /recordCallEvent\('reminder-understood'\)/);
 });
 
 test('informar que tomou é separado do recebimento do lembrete', () => {

@@ -1138,11 +1138,6 @@ familyContactForm.addEventListener('submit', (event) => {
     familyContactMessage.hidden = false;
   }
 });
-document.querySelector('#simulate-family-call').addEventListener('click', () => {
-  openCallSimulation('medication');
-});
-document.querySelector('#simulate-ubs-call').addEventListener('click', () => openCallSimulation('ubs'));
-document.querySelector('#simulate-acs-call').addEventListener('click', () => openCallSimulation('acs'));
 document.querySelector('#open-family-search').addEventListener('click', () => {
   const list = document.querySelector('#family-service-list');
   list.hidden = !list.hidden;
