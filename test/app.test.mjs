@@ -45,7 +45,7 @@ test('o menu oferece comando de voz com retorno visual e mantém a navegação p
   assert.match(script, /function menuDestinationFor/);
   assert.match(script, /window\.SpeechRecognition \|\| window\.webkitSpeechRecognition/);
   assert.match(script, /recognition\.continuous = false/);
-  assert.match(script, /Ouvindo: diga “Início”, “Medicamentos”, “Consultas”, “Família” ou “Encontrar medicamentos”/);
+  assert.match(script, /Ouvindo: diga “Início”, “Medicamentos”, “Consultas”, “Família”, “Encontrar medicamentos” ou “Ligar para os Bombeiros”/);
   assert.match(script, /Microfone não autorizado\. Use os botões do menu/);
   assert.match(script, /showView\(destination\)/);
   assert.match(html, /data-view="medications"/);
@@ -170,6 +170,20 @@ test('a página identifica ligações e permissões familiares como demonstraç�
   assert.match(html, /Lembrete por ligação/);
   assert.match(html, /Nenhuma chamada real será feita/);
   assert.match(html, /Permissões de acesso/);
+});
+
+test('a família oferece ligação real para emergência sem simulação', () => {
+  assert.match(html, /id="my-ubs-title">Minha UBS/);
+  assert.match(html, /id="linked-family-title">Minha família/);
+  assert.match(html, /id="emergency-title">Emergência/);
+  assert.match(html, /Corpo de Bombeiros/);
+  assert.match(html, /href="tel:193"/);
+  assert.match(html, /Ligar para os Bombeiros/);
+  assert.match(html, /capacidade deste dispositivo realizar chamadas/);
+  assert.match(script, /return 'emergency-dial'/);
+  assert.match(script, /window\.location\.href = 'tel:193'/);
+  assert.match(script, /Ligar para os Bombeiros/);
+  assert.doesNotMatch(html, /Simular ligação para os Bombeiros/);
 });
 
 test('o cartão principal usa uma cápsula realista com fundo transparente', async () => {

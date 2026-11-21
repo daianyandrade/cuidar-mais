@@ -331,13 +331,22 @@
             <span class="authorized-chip">Vínculo autorizado<br />· demonstração</span>
           </article>
 
+          <section class="family-section" aria-labelledby="my-ubs-title">
+            <h3 id="my-ubs-title">Minha UBS</h3>
+            <article class="ubs-reference-card">
+              <span class="ubs-reference-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M8 56V25l24-14 24 14v31H8Zm14-19h20M32 27v20M14 18h36" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M32 20v14M25 27h14" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span>
+              <div><strong>Unidade de referência</strong><p>Consulte endereço e telefone da sua UBS antes de ligar.</p></div>
+            </article>
+            <button id="open-ubs-finder" class="secondary-action full-width" type="button">Encontrar minha UBS</button>
+          </section>
+
           <section class="family-section" aria-labelledby="family-status-title">
             <h3 id="family-status-title">Acompanhamento de hoje</h3>
             <div id="family-reminder-status" class="family-status" aria-live="polite"></div>
           </section>
 
           <section class="family-section" aria-labelledby="linked-family-title">
-            <div class="section-title-row"><h3 id="linked-family-title">Familiares vinculados</h3><span class="count-chip">Com autorização</span></div>
+            <div class="section-title-row"><h3 id="linked-family-title">Minha família</h3><span class="count-chip">Com autorização</span></div>
             <div id="family-contact-list" class="family-contact-list" aria-live="polite"></div>
             <details class="medicine-form-panel">
               <summary>+ Vincular familiar ou cuidador</summary>
@@ -351,6 +360,16 @@
                 <button class="primary-action full-width" type="submit">Salvar vínculo demonstrativo</button>
               </form>
             </details>
+          </section>
+
+          <section class="family-section emergency-section" aria-labelledby="emergency-title">
+            <h3 id="emergency-title">Emergência</h3>
+            <article class="emergency-card">
+              <span class="emergency-icon" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M13 49h38l-5-25H18l-5 25Zm9-25v-7h20v7M9 56h46" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 39h20M32 29v20" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>
+              <div><p>Corpo de Bombeiros</p><strong>193</strong></div>
+              <a class="emergency-call-link" href="tel:193" aria-label="Ligar para o Corpo de Bombeiros, 193"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.7 3.5 9.5 3l1.7 4.4-2 1.7a15.4 15.4 0 0 0 5.6 5.6l1.7-2 4.4 1.7-.5 2.8a2 2 0 0 1-2 1.7C10.7 18.9 5.1 13.3 5.1 6a2 2 0 0 1 1.6-2.5Z" fill="currentColor"/></svg><span>Ligar para os Bombeiros</span></a>
+            </article>
+            <p class="emergency-note">O botão abre o discador do aparelho. A ligação depende da capacidade deste dispositivo realizar chamadas.</p>
           </section>
 
           <section class="family-section" aria-labelledby="phone-reminder-title">

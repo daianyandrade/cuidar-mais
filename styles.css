@@ -299,6 +299,11 @@ html.large-text { font-size: 118%; }
 .authorized-chip { grid-column: 2; width: max-content; padding: 4px 7px; border-radius: 8px; color: #075d29; background: #d9f9df; font-size: .7rem; font-weight: 800; }
 .family-section { margin-top: 22px; }
 .family-section h3 { margin: 0 0 10px; color: var(--navy); font-size: 1.15rem; }
+.ubs-reference-card { display: grid; grid-template-columns: 49px 1fr; gap: 11px; align-items: center; padding: 14px; border: 1px solid #b9dced; border-radius: 16px; background: #f0faff; }
+.ubs-reference-icon { display: grid; width: 45px; height: 45px; place-items: center; border-radius: 13px; color: white; background: #0874b9; }
+.ubs-reference-icon svg { width: 34px; height: 34px; }
+.ubs-reference-card strong { display: block; color: #173456; font-size: 1rem; }
+.ubs-reference-card p { margin: 4px 0 0; color: #415d74; font-size: .85rem; line-height: 1.3; }
 .family-status { display: grid; grid-template-columns: 43px 1fr; gap: 10px; align-items: center; padding: 13px; border: 1px solid var(--line); border-radius: 16px; background: white; box-shadow: 0 3px 10px rgba(7, 41, 74, .07); }
 .family-status-icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 50%; color: white; font-size: 1.2rem; font-weight: 900; }
 .family-status-icon.confirmed { background: #0b9439; }
@@ -317,6 +322,17 @@ html.large-text { font-size: 118%; }
 .phone-simulation-card > span { display: grid; width: 39px; height: 39px; place-items: center; border-radius: 50%; color: white; background: #1b75ae; font-size: 1.2rem; }
 .phone-simulation-card strong { font-size: .96rem; }
 .phone-simulation-card p { margin: 3px 0 0; color: #405b73; font-size: .81rem; line-height: 1.3; }
+.emergency-section { padding: 15px; border: 2px solid #e47b7b; border-radius: 20px; background: #fff7f7; }
+.emergency-section h3 { margin-bottom: 11px; color: #a02020; }
+.emergency-card { display: grid; grid-template-columns: 58px 1fr; gap: 12px; align-items: center; padding: 15px; border-radius: 16px; color: white; background: linear-gradient(135deg, #cf3434, #a81313); box-shadow: 0 5px 12px rgba(149, 18, 18, .2); }
+.emergency-icon { display: grid; width: 55px; height: 55px; place-items: center; border-radius: 17px; color: #b71919; background: white; }
+.emergency-icon svg { width: 40px; height: 40px; }
+.emergency-card p { margin: 0; font-size: .89rem; font-weight: 800; }
+.emergency-card strong { display: block; margin-top: -2px; font-size: 3.1rem; line-height: 1; letter-spacing: .02em; }
+.emergency-call-link { display: flex; grid-column: 1 / -1; min-height: 52px; gap: 9px; align-items: center; justify-content: center; padding: 10px 14px; border: 2px solid white; border-radius: 13px; color: #a81313; text-decoration: none; background: white; font-size: 1rem; font-weight: 800; }
+.emergency-call-link svg { width: 22px; height: 22px; }
+.emergency-call-link:hover { background: #fff1f1; }
+.emergency-note { margin: 11px 1px 0; color: #7c3030; font-size: .83rem; line-height: 1.35; }
 .permissions-section { padding: 14px; border-radius: 16px; background: #fff7dd; }
 .permissions-section p { margin: 0; color: #5e531d; font-size: .83rem; line-height: 1.35; }
 

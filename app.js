@@ -11,6 +11,7 @@ const medicationsView = document.querySelector('#medications-view');
 const finderView = document.querySelector('#finder-view');
 const consultationsView = document.querySelector('#consultations-view');
 const familyView = document.querySelector('#family-view');
+const openUbsFinderButton = document.querySelector('#open-ubs-finder');
 const welcome = document.querySelector('.welcome');
 const medicationForm = document.querySelector('#medication-form');
 const scheduleFields = document.querySelector('#schedule-fields');
@@ -132,6 +133,7 @@ function stopMenuVoiceRecognition(message = '') {
 
 function menuDestinationFor(transcript) {
   const command = String(transcript).toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[.,!?]/g, '').trim();
+  if (/\b(ligar|chamar)\b.*\b(bombeiro|bombeiros)\b/.test(command)) return 'emergency-dial';
   if (/\b(encontrar|buscar)\b.*\b(medicamento|medicamentos|remedio|remedios)\b/.test(command) || /\b(unidade|unidades)\b/.test(command)) return 'finder';
   if (/\b(medicamento|medicamentos|remedio|remedios)\b/.test(command)) return 'medications';
   if (/\b(consulta|consultas|agenda|exame|exames)\b/.test(command)) return 'consultations';
@@ -140,8 +142,17 @@ function menuDestinationFor(transcript) {
   return null;
 }
 
+function openEmergencyDialer() {
+  window.location.href = 'tel:193';
+}
+
 function openVoiceMenuDestination(destination) {
   const labels = { home: 'Início', medications: 'Medicamentos', finder: 'Encontrar medicamentos', consultations: 'Consultas', family: 'Família' };
+  if (destination === 'emergency-dial') {
+    setVoiceMenuStatus('Abrindo o discador para o Corpo de Bombeiros, 193.', false);
+    openEmergencyDialer();
+    return;
+  }
   if (destination === 'finder') {
     showView('finder');
     finderSearchButton.focus({ preventScroll: true });
@@ -170,14 +181,14 @@ function startMenuVoiceRecognition() {
   voiceMenuButton.classList.add('listening');
   voiceMenuButton.setAttribute('aria-pressed', 'true');
   voiceMenuButton.setAttribute('aria-label', 'Parar comando de voz no menu');
-  setVoiceMenuStatus('Ouvindo: diga “Início”, “Medicamentos”, “Consultas”, “Família” ou “Encontrar medicamentos”.', false);
+  setVoiceMenuStatus('Ouvindo: diga “Início”, “Medicamentos”, “Consultas”, “Família”, “Encontrar medicamentos” ou “Ligar para os Bombeiros”.', false);
   let settled = false;
   recognition.onresult = (event) => {
     settled = true;
     const destination = menuDestinationFor(event.results?.[0]?.[0]?.transcript || '');
     finishMenuVoiceRecognition();
     if (destination) openVoiceMenuDestination(destination);
-    else setVoiceMenuStatus('Não entendi. Diga “Início”, “Medicamentos”, “Consultas”, “Família” ou “Encontrar medicamentos”.', false);
+    else setVoiceMenuStatus('Não entendi. Diga “Início”, “Medicamentos”, “Consultas”, “Família”, “Encontrar medicamentos” ou “Ligar para os Bombeiros”.', false);
   };
   recognition.onerror = (event) => {
     if (settled) return;
@@ -1011,6 +1022,11 @@ document.querySelectorAll('[data-demo-action]').forEach((element) => element.add
 document.querySelectorAll('[data-open-medicine-finder]').forEach((button) => button.addEventListener('click', () => {
   focusMedicineFinder();
 }));
+openUbsFinderButton.addEventListener('click', () => {
+  showView('finder');
+  finderSearchButton.focus({ preventScroll: true });
+  showToast('Encontre a UBS e confirme o telefone antes de ligar.');
+});
 finderSearchButton.addEventListener('click', findNearbyUnits);
 document.querySelector('#repeat-reminder').addEventListener('click', speakReminder);
 document.querySelector('#simulate-reminder-call').addEventListener('click', () => openCallSimulation('medication'));
